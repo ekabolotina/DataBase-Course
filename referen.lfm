@@ -2,12 +2,12 @@ object ReferenForm: TReferenForm
   Left = 459
   Height = 409
   Top = 201
-  Width = 896
+  Width = 885
   Align = alClient
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'ReferenForm'
   ClientHeight = 409
-  ClientWidth = 896
+  ClientWidth = 885
   Constraints.MinHeight = 320
   Constraints.MinWidth = 650
   ParentFont = True
@@ -88,14 +88,13 @@ object ReferenForm: TReferenForm
     OnClick = BtnRemoveClick
     TabOrder = 4
   end
-  object ScrollBar: TScrollBar
-    Left = 872
-    Height = 410
-    Top = 0
-    Width = 17
-    Kind = sbVertical
-    PageSize = 0
-    Position = 50
+  object BtnReport: TButton
+    Left = 664
+    Height = 28
+    Top = 59
+    Width = 203
+    Caption = 'Срезы расписания'
+    OnClick = BtnReportClick
     TabOrder = 5
   end
   object SQLQuery: TSQLQuery

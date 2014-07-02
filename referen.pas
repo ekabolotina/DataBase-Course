@@ -6,7 +6,8 @@ interface
 
 uses
   Classes, SysUtils, sqldb, db, BufDataset, FileUtil, Forms, Controls, Graphics,
-  Dialogs, DBGrids, StdCtrls, ExtCtrls, DbCtrls, Connect, MetaUnit, CardInsert, CardEdit;
+  Dialogs, DBGrids, StdCtrls, ExtCtrls, DbCtrls, Connect, MetaUnit, CardInsert,
+  CardEdit, Schedule;
 
 type
 
@@ -26,37 +27,34 @@ type
     ID: Integer;
   end;
 
-  TSortType = (NONE, DESC, ASC);
-
   TReferenForm = class(TForm)
     BtnAddFilter: TButton;
     BtnInsert: TButton;
     BtnEdit: TButton;
     BtnRemove: TButton;
+    BtnReport: TButton;
     FilterSubmit: TButton;
     Datasource: TDatasource;
     DBGrid: TDBGrid;
     FilterGroup: TGroupBox;
-    ScrollBar: TScrollBar;
     SQLQuery: TSQLQuery;
     procedure BtnAddFilterClick(Sender: TObject);
     procedure BtnEditClick(Sender: TObject);
     procedure BtnInsertClick(Sender: TObject);
     procedure BtnRemoveClick(Sender: TObject);
+    procedure BtnReportClick(Sender: TObject);
     procedure DBGridTitleClick(Column: TColumn);
     procedure FilterSubmitClick(Sender: TObject);
-    //procedure FormResize(Sender: TObject);
     procedure PopupForm(ATable: TTableInfo);
+    procedure ShowTable;
     procedure SwitchUpdateBtn(Sender: TObject);
     procedure RemoveFilter(Sender: TObject);
     procedure FilterEnDis(Sender: TObject);
-  private
-    procedure ShowTable(ATable: TTableInfo; ADBGrid: TDBGrid; AQuery: String);
   public
     ThisTable: TTableInfo;
     ThisQuery, DeleteConst: String;
     FilterType: TComboBox;
-    SortStatus: array of TSortType;
+    SortStatus: array of (NONE, ASC, DESC);
     SortType, SortIcon: String;
     SortIndex: Integer;
     FilterStrList: array of String;
@@ -65,7 +63,6 @@ type
     CardEditForm: array of TEditFrms;
     procedure MkPnl();
     function MakeLocalQuery(): String;
-    procedure RefreshTable;
     procedure ClearTrash(AID: Integer);
   end;
 
@@ -74,13 +71,14 @@ var
 
 implementation
 
-procedure TReferenForm.ShowTable(ATable: TTableInfo; ADBGrid: TDBGrid; AQuery: String);
+procedure TReferenForm.ShowTable;
 var
   i: Integer;
   FSortIcon: String;
 begin
+  ThisQuery := TMeta.MakeQuery(ThisTable, MakeLocalQuery);
   SQLQuery.Close;
-  SQLQuery.SQL.Text := AQuery;
+  SQLQuery.SQL.Text := ThisQuery;
   for i := 0 to High(FilterPanels) do begin
     with FilterPanels[i] do begin
       if not FCheckBox.Checked then Continue;
@@ -88,33 +86,31 @@ begin
     end;
   end;
   SQLQuery.Open;
-  for i := 0 to High(ATable.FFields) do begin
+  for i := 0 to High(ThisTable.FFields) do begin
     if i = SortIndex then
       FSortIcon := ' ' + SortIcon
     else
       FSortIcon := '';
-    ADBGrid.Columns[i].Title.Caption := ATable.FFields[i].FCaption + FSortIcon;
-    ADBGrid.Columns[i].Width := ATable.FFields[i].FWidth * 10 + 5;
+    DBGrid.Columns[i].Title.Caption := ThisTable.FFields[i].FCaption + FSortIcon;
+    DBGrid.Columns[i].Width := ThisTable.FFields[i].FWidth * 10 + 5;
   end;
-  ADBGrid.Columns[0].Visible := False;
-end;
-
-procedure TReferenForm.RefreshTable();
-var
-  M: TMeta;
-begin
-  ShowTable(ThisTable, DBGrid, M.MakeQuery(ThisTable, MakeLocalQuery));
+  //DBGrid.Columns[0].Visible := False;
 end;
 
 procedure TReferenForm.ClearTrash(AID: Integer);
 var
   i: Integer;
+  shift: Boolean;
 begin
+  shift := False;
   for i := 0 to High(CardEditForm) do
-    if (CardEditForm[i].ID = AID) and (CardEditForm[i].Frm <> nil) then begin
-      CardEditForm[i].Frm := nil;
-      Break;
-    end;
+    if shift then begin
+      CardEditForm[i-1].Frm := CardEditForm[i].Frm;
+      CardEditForm[i-1].ID := CardEditForm[i].ID;
+    end else if CardEditForm[i].ID = AID then
+      shift := True;
+  if shift then
+    SetLength(CardEditForm, High(CardEditForm));
 end;
 
 procedure TReferenForm.SwitchUpdateBtn(Sender: TObject);
@@ -245,14 +241,12 @@ end;
 procedure TReferenForm.PopupForm(ATable: TTableInfo);
 var
   i: Integer;
-  M: TMeta;
 begin
   ThisTable := ATable;
   DeleteConst := 'ID <> 0';
   SortIndex := -1;
   SetLength(SortStatus, Length(ATable.FFields));
   ReferenForm := TReferenForm.Create(nil);
-  ShowTable(ATable, DBGrid, TMeta.MakeQuery(ATable));
   SetLength(FilterStrList, Length(ATable.FFields));
   for i := 0 to High(FilterStrList) do
     FilterStrList[i] := ATable.FFields[i].FCaption;
@@ -260,24 +254,14 @@ begin
   FilterGroup.Height := 20;
   DBGrid.Top := 40;
   MkPnl();
+  ShowTable;
   Show;
 end;
 
-//procedure TReferenForm.FormResize(Sender: TObject);
-//begin
-//  with DBGrid do begin
-//    Width := Self.Width;
-//    Height := Self.Height - 80;
-//  end;
-//end;
-
 function TReferenForm.MakeLocalQuery(): String;
-const
-  SORT_SQL: array [TSortType] of String = ('', ' ASC', ' DESC');
 var
   i, counter: Integer;
   query, field, ftype: String;
-  M: TMeta;
 begin
   counter := 0;
   query := '';
@@ -308,14 +292,14 @@ begin
       else
         field := Format('%s.%s', [ThisTable.FName, FName]);
     end;
-    query += Format(' ORDER BY %s %s', [field, SORT_SQL[SortStatus[SortIndex]]]);
+    query += Format(' ORDER BY %s %s', [field, SortType]);
   end;
   Result := query;
 end;
 
 procedure TReferenForm.FilterSubmitClick(Sender: TObject);
 begin
-  ShowTable(ThisTable, DBGrid, TMeta.MakeQuery(ThisTable, MakeLocalQuery));
+  ShowTable;
   FilterSubmit.Enabled := False;
 end;
 
@@ -344,8 +328,8 @@ begin
       SortIcon := '';
     end;
   end;
-  ShowTable(ThisTable, DBGrid, M.MakeQuery(ThisTable, MakeLocalQuery));
-end;
+  ShowTable;
+  end;
 
 procedure TReferenForm.BtnAddFilterClick(Sender: TObject);
 begin
@@ -355,8 +339,11 @@ end;
 
 procedure TReferenForm.BtnInsertClick(Sender: TObject);
 begin
-  CardInsertForm := TCardInsertForm.Create(nil);
-  CardInsertForm.PopUpForm(ThisTable, @RefreshTable);
+  SetLength(CardEditForm, Length(CardEditForm)+1);
+  with CardEditForm[High(CardEditForm)] do begin
+    Frm := TCardEditForm.Create(nil);
+    Frm.PopUpForm(ThisTable, 0, [''], False, @ShowTable, @ClearTrash);
+  end;
 end;
 
 procedure TReferenForm.BtnEditClick(Sender: TObject);
@@ -365,20 +352,22 @@ var
   FieldsVals: array of String;
 begin
   forEdit := Datasource.DataSet.FieldByName('ID').AsInteger;
-  for i := 0 to High(CardEditForm) do
-    if (CardEditForm[i].Frm.CurrentID = forEdit) and (CardEditForm[i].Frm <> nil) then begin
-      CardEditForm[i].Frm.BringToFront;
-      Exit;
-    end;
   SetLength(FieldsVals, Length(ThisTable.FFields));
   for i := 1 to High(ThisTable.FFields) do
     FieldsVals[i] := Datasource.DataSet.Fields[i].AsString;
+  for i := 0 to High(CardEditForm) do
+    if CardEditForm[i].ID = forEdit then begin
+      CardEditForm[i].Frm.BringToFront;
+      Exit;
+    end;
+
   SetLength(CardEditForm, Length(CardEditForm)+1);
   with CardEditForm[High(CardEditForm)] do begin
     Frm := TCardEditForm.Create(nil);
-    //ID := forEdit;
-    Frm.PopUpForm(ThisTable, forEdit, FieldsVals, @RefreshTable, @ClearTrash);
+    ID := forEdit;
+    Frm.PopUpForm(ThisTable, forEdit, FieldsVals, True, @ShowTable, @ClearTrash);
   end;
+
 end;
 
 procedure TReferenForm.BtnRemoveClick(Sender: TObject);
@@ -396,8 +385,13 @@ begin
       ExecSQL;
     end;
     ConnectModule.SQLTransaction.Commit;
-    RefreshTable;
+    ShowTable;
   end;
+end;
+
+procedure TReferenForm.BtnReportClick(Sender: TObject);
+begin
+  FormSchedule.PopUpForm;
 end;
 
 
