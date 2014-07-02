@@ -41,7 +41,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="6">
+    <Units Count="7">
       <Unit0>
         <Filename Value="SQLAdmin.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -84,6 +84,14 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="cardinsert"/>
       </Unit5>
+      <Unit6>
+        <Filename Value="cardedit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="CardEditForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="CardEdit"/>
+      </Unit6>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
