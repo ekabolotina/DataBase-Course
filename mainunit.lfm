@@ -1,8 +1,8 @@
 object MainForm: TMainForm
-  Left = 1005
-  Height = 52
+  Left = 973
+  Height = 61
   Top = 487
-  Width = 342
+  Width = 374
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'SQL Schedule'
   Menu = MainMenu
