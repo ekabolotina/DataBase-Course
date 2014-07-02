@@ -21,16 +21,17 @@ type
 
   TTableInfo = class
   public
-    FName, FCaption, FSequence: String;
+    FName, FCaption, FSequence, FSortField: String;
     FFields: array of TFieldInfo;
-    constructor Create(AName, ACaption, ASequence: String; AFields: array of TFieldInfo);
+    constructor Create(AName, ACaption, ASequence, ASortField: String; AFields: array of TFieldInfo);
   end;
 
   TMeta = class
   public
-    procedure AddTable(AName, ACaption, ASequence: String; AFields: array of TFieldInfo);
+    procedure AddTable(AName, ACaption, ASequence, ASortField: String; AFields: array of TFieldInfo);
     procedure AddTable(ATable: TTableInfo);
     class function MakeQuery(ATable: TTableInfo; AConstrains: string = ''): String;
+    class function GetTableByName(AName: String): TTableInfo;
   end;
 
 function MkFld(AName, ACaption: String; AWidth: Integer;
@@ -61,13 +62,14 @@ begin
   FForeignKeyRow := AForeignKeyRow;
 end;
 
-constructor TTableInfo.Create(AName, ACaption, ASequence: String; AFields: array of TFieldInfo);
+constructor TTableInfo.Create(AName, ACaption, ASequence, ASortField: String; AFields: array of TFieldInfo);
 var
   i: Integer;
 begin
   FName := AName;
   FCaption := ACaption;
   FSequence := ASequence;
+  FSortField := ASortField;
   SetLength(FFields, Length(AFields));
   for i := 0 to High(AFields) do
     FFields[i] := AFields[i];
@@ -95,15 +97,24 @@ begin
   Result := Format('SELECT %s FROM %s %s %s', [rows, ATable.FName, innerjoins, consraints]);
 end;
 
-procedure TMeta.AddTable(AName, ACaption, ASequence: String; AFields: array of TFieldInfo);
+procedure TMeta.AddTable(AName, ACaption, ASequence, ASortField: String; AFields: array of TFieldInfo);
 begin
-  AddTable(TTableInfo.Create(AName, ACaption, ASequence, AFields));
+  AddTable(TTableInfo.Create(AName, ACaption, ASequence, ASortField, AFields));
 end;
 
 procedure TMeta.AddTable(ATable: TTableInfo);
 begin
   SetLength(Tables, Length(Tables)+1);
   Tables[High(Tables)] := ATable;
+end;
+
+class function TMeta.GetTableByName(AName: String): TTableInfo;
+var
+  i: Integer;
+begin
+  for i := 0 to High(Tables) do
+    if Tables[i].FName = AName then
+      Exit(Tables[i]);
 end;
 
 end.
