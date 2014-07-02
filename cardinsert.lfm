@@ -1,0 +1,41 @@
+object CardInsertForm: TCardInsertForm
+  Left = 868
+  Height = 265
+  Top = 83
+  Width = 463
+  BorderIcons = [biSystemMenu, biMinimize]
+  Caption = 'CardInsertForm'
+  ClientHeight = 265
+  ClientWidth = 463
+  PopupMode = pmExplicit
+  PopupParent = ReferenForm.Owner
+  Position = poOwnerFormCenter
+  LCLVersion = '1.0.12.0'
+  object BtnSave: TButton
+    Left = 371
+    Height = 23
+    Top = 15
+    Width = 74
+    Caption = 'Сохранить'
+    TabOrder = 0
+  end
+  object BtnCancel: TButton
+    Left = 371
+    Height = 23
+    Top = 48
+    Width = 74
+    Caption = 'Отмена'
+    OnClick = BtnCancelClick
+    TabOrder = 1
+  end
+  object CardInsertGroupBox: TGroupBox
+    Left = 14
+    Height = 161
+    Top = 12
+    Width = 343
+    AutoSize = True
+    Caption = 'Вставить запись'
+    Constraints.MinWidth = 343
+    TabOrder = 2
+  end
+end
