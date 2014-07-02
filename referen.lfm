@@ -1,72 +1,57 @@
 object ReferenForm: TReferenForm
-  Left = 746
+  Left = 699
   Height = 320
-  Top = 126
-  Width = 600
+  Top = 120
+  Width = 650
   Align = alClient
   Caption = 'ReferenForm'
   ClientHeight = 320
-  ClientWidth = 600
+  ClientWidth = 650
   Constraints.MinHeight = 320
-  Constraints.MinWidth = 600
+  Constraints.MinWidth = 650
   OnResize = FormResize
   LCLVersion = '1.0.12.0'
   object DBGrid: TDBGrid
     Left = 0
     Height = 320
-    Top = 80
-    Width = 600
+    Top = 88
+    Width = 650
     Color = clWindow
     Columns = <>
     Constraints.MinHeight = 320
-    Constraints.MinWidth = 600
+    Constraints.MinWidth = 650
     DataSource = Datasource
     Scrollbars = ssAutoBoth
     TabOrder = 0
+    OnTitleClick = DBGridTitleClick
   end
-  object FilterFieldsList: TComboBox
-    Left = 12
-    Height = 23
-    Top = 27
-    Width = 100
-    AutoSelect = False
-    ItemHeight = 15
-    Style = csDropDownList
+  object FilterGroup: TGroupBox
+    Left = 8
+    Height = 0
+    Top = 5
+    Width = 634
+    Caption = 'Фильтр'
+    ClientHeight = 0
+    ClientWidth = 630
     TabOrder = 1
-  end
-  object FilterSignsList: TComboBox
-    Left = 128
-    Height = 23
-    Top = 27
-    Width = 50
-    ItemHeight = 15
-    ItemIndex = 0
-    Items.Strings = (
-      '>'
-      '<'
-      '='
-      '>='
-      '<='
-    )
-    Style = csDropDownList
-    TabOrder = 2
-    Text = '>'
-  end
-  object FilterConstraint: TEdit
-    Left = 191
-    Height = 23
-    Top = 27
-    Width = 265
-    TabOrder = 3
-  end
-  object FilterSubmit: TButton
-    Left = 472
-    Height = 23
-    Top = 27
-    Width = 64
-    Caption = 'Обновить'
-    OnClick = FilterSubmitClick
-    TabOrder = 4
+    object BtnAddFilter: TButton
+      Left = 530
+      Height = 23
+      Top = 8
+      Width = 23
+      Caption = '+'
+      OnClick = BtnAddFilterClick
+      TabOrder = 0
+    end
+    object FilterSubmit: TButton
+      Left = 560
+      Height = 23
+      Top = 8
+      Width = 64
+      Caption = 'Обновить'
+      OnClick = FilterSubmitClick
+      TabOrder = 1
+    end
   end
   object SQLQuery: TSQLQuery
     FieldDefs = <>
