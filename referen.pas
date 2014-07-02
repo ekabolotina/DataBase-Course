@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, sqldb, db, BufDataset, FileUtil, Forms, Controls, Graphics,
-  Dialogs, DBGrids, StdCtrls, ExtCtrls, DbCtrls, Connect, MetaUnit, CardInsert;
+  Dialogs, DBGrids, StdCtrls, ExtCtrls, DbCtrls, Connect, MetaUnit, CardInsert, CardEdit;
 
 type
 
@@ -21,6 +21,13 @@ type
     FCheckBox: TCheckBox;
   end;
 
+  TEditFrms = record
+    Frm: TCardEditForm;
+    ID: Integer;
+  end;
+
+  TSortType = (NONE, DESC, ASC);
+
   TReferenForm = class(TForm)
     BtnAddFilter: TButton;
     BtnInsert: TButton;
@@ -30,29 +37,36 @@ type
     Datasource: TDatasource;
     DBGrid: TDBGrid;
     FilterGroup: TGroupBox;
+    ScrollBar: TScrollBar;
     SQLQuery: TSQLQuery;
     procedure BtnAddFilterClick(Sender: TObject);
+    procedure BtnEditClick(Sender: TObject);
     procedure BtnInsertClick(Sender: TObject);
+    procedure BtnRemoveClick(Sender: TObject);
     procedure DBGridTitleClick(Column: TColumn);
     procedure FilterSubmitClick(Sender: TObject);
     //procedure FormResize(Sender: TObject);
     procedure PopupForm(ATable: TTableInfo);
-    procedure ShowTable(ATable: TTableInfo; ADBGrid: TDBGrid; AQuery: String);
     procedure SwitchUpdateBtn(Sender: TObject);
     procedure RemoveFilter(Sender: TObject);
     procedure FilterEnDis(Sender: TObject);
+  private
+    procedure ShowTable(ATable: TTableInfo; ADBGrid: TDBGrid; AQuery: String);
   public
     ThisTable: TTableInfo;
-    ThisQuery: String;
+    ThisQuery, DeleteConst: String;
     FilterType: TComboBox;
-    SortStatus: array of (NONE, DESC, ASC);
+    SortStatus: array of TSortType;
     SortType, SortIcon: String;
     SortIndex: Integer;
     FilterStrList: array of String;
     FilterPanels: array of TFilters;
     InsFrm: TCardInsertForm;
+    CardEditForm: array of TEditFrms;
     procedure MkPnl();
     function MakeLocalQuery(): String;
+    procedure RefreshTable;
+    procedure ClearTrash(AID: Integer);
   end;
 
 var
@@ -70,7 +84,7 @@ begin
   for i := 0 to High(FilterPanels) do begin
     with FilterPanels[i] do begin
       if not FCheckBox.Checked then Continue;
-      SQLQuery.ParamByName('FConst_Text' + IntToStr(i)).AsString := FConstraint.Text;
+      SQLQuery.ParamByName(Format('FConst_Text%d', [i])).AsString := FConstraint.Text;
     end;
   end;
   SQLQuery.Open;
@@ -82,6 +96,25 @@ begin
     ADBGrid.Columns[i].Title.Caption := ATable.FFields[i].FCaption + FSortIcon;
     ADBGrid.Columns[i].Width := ATable.FFields[i].FWidth * 10 + 5;
   end;
+  ADBGrid.Columns[0].Visible := False;
+end;
+
+procedure TReferenForm.RefreshTable();
+var
+  M: TMeta;
+begin
+  ShowTable(ThisTable, DBGrid, M.MakeQuery(ThisTable, MakeLocalQuery));
+end;
+
+procedure TReferenForm.ClearTrash(AID: Integer);
+var
+  i: Integer;
+begin
+  for i := 0 to High(CardEditForm) do
+    if (CardEditForm[i].ID = AID) and (CardEditForm[i].Frm <> nil) then begin
+      CardEditForm[i].Frm := nil;
+      Break;
+    end;
 end;
 
 procedure TReferenForm.SwitchUpdateBtn(Sender: TObject);
@@ -145,8 +178,9 @@ begin
       Height := 23;
       Top := 8;
       Left := 50;
-      ReadOnly := True;
+      Style := csDropDownList;
       Items.AddStrings(FilterStrList);
+      Items.Delete(0);
       ItemIndex := 0;
       OnChange := @SwitchUpdateBtn;
       Parent := FPanel;
@@ -158,7 +192,7 @@ begin
       Height := 23;
       Top := 8;
       Left := 160;
-      ReadOnly := True;
+      Style := csDropDownList;
       Items.AddStrings(['>', '<', '=', '>=', '<=', '<>']);
       ItemIndex := 0;
       OnChange := @SwitchUpdateBtn;
@@ -195,7 +229,7 @@ begin
         Height := 23;
         Top := 8;
         Left := 450;
-        ReadOnly := True;
+        Style := csDropDownList;
         Items.AddStrings(['AND', 'OR']);
         ItemIndex := 0;
         OnChange := @SwitchUpdateBtn;
@@ -214,12 +248,13 @@ var
   M: TMeta;
 begin
   ThisTable := ATable;
+  DeleteConst := 'ID <> 0';
   SortIndex := -1;
   SetLength(SortStatus, Length(ATable.FFields));
   ReferenForm := TReferenForm.Create(nil);
-  ShowTable(ATable, DBGrid, M.MakeQuery(ATable));
+  ShowTable(ATable, DBGrid, TMeta.MakeQuery(ATable));
   SetLength(FilterStrList, Length(ATable.FFields));
-  for i := 0 to High(ATable.FFields) do
+  for i := 0 to High(FilterStrList) do
     FilterStrList[i] := ATable.FFields[i].FCaption;
   Caption := ATable.FCaption;
   FilterGroup.Height := 20;
@@ -237,6 +272,8 @@ end;
 //end;
 
 function TReferenForm.MakeLocalQuery(): String;
+const
+  SORT_SQL: array [TSortType] of String = ('', ' ASC', ' DESC');
 var
   i, counter: Integer;
   query, field, ftype: String;
@@ -249,11 +286,11 @@ begin
       if not FCheckBox.Checked then Continue;
       field := '';
       ftype := '';
-      with ThisTable.FFields[FFieldsList.ItemIndex] do begin
+      with ThisTable.FFields[FFieldsList.ItemIndex+1] do begin
         if FForeignKeyTable <> '' then
-          field := FForeignKeyTable + '.Name'
+          field := Format('%s.Name', [FForeignKeyTable])
         else
-          field := FName;
+          field := Format('%s.%s', [ThisTable.FName, FName]);
       end;
       if counter <> 0 then
         ftype := FilterType.Text;
@@ -264,23 +301,21 @@ begin
   if counter > 0 then
     query := 'WHERE ' + query;
 
-  if SortIndex <> -1 then begin;
+  if SortIndex <> -1 then begin
     with ThisTable.FFields[SortIndex] do begin
       if FForeignKeyTable <> '' then
-        field := FForeignKeyTable + '.Name'
+        field := Format('%s.Name', [FForeignKeyTable])
       else
-        field := FName;
+        field := Format('%s.%s', [ThisTable.FName, FName]);
     end;
-    query += Format(' ORDER BY %s %s', [field, SortType]);
+    query += Format(' ORDER BY %s %s', [field, SORT_SQL[SortStatus[SortIndex]]]);
   end;
   Result := query;
 end;
 
 procedure TReferenForm.FilterSubmitClick(Sender: TObject);
-var
-  M: TMeta;
 begin
-  ShowTable(ThisTable, DBGrid, M.MakeQuery(ThisTable, MakeLocalQuery));
+  ShowTable(ThisTable, DBGrid, TMeta.MakeQuery(ThisTable, MakeLocalQuery));
   FilterSubmit.Enabled := False;
 end;
 
@@ -310,7 +345,7 @@ begin
     end;
   end;
   ShowTable(ThisTable, DBGrid, M.MakeQuery(ThisTable, MakeLocalQuery));
-  end;
+end;
 
 procedure TReferenForm.BtnAddFilterClick(Sender: TObject);
 begin
@@ -320,7 +355,49 @@ end;
 
 procedure TReferenForm.BtnInsertClick(Sender: TObject);
 begin
-  InsFrm.PopUpForm(ThisTable);
+  CardInsertForm := TCardInsertForm.Create(nil);
+  CardInsertForm.PopUpForm(ThisTable, @RefreshTable);
+end;
+
+procedure TReferenForm.BtnEditClick(Sender: TObject);
+var
+  forEdit, i: Integer;
+  FieldsVals: array of String;
+begin
+  forEdit := Datasource.DataSet.FieldByName('ID').AsInteger;
+  for i := 0 to High(CardEditForm) do
+    if (CardEditForm[i].Frm.CurrentID = forEdit) and (CardEditForm[i].Frm <> nil) then begin
+      CardEditForm[i].Frm.BringToFront;
+      Exit;
+    end;
+  SetLength(FieldsVals, Length(ThisTable.FFields));
+  for i := 1 to High(ThisTable.FFields) do
+    FieldsVals[i] := Datasource.DataSet.Fields[i].AsString;
+  SetLength(CardEditForm, Length(CardEditForm)+1);
+  with CardEditForm[High(CardEditForm)] do begin
+    Frm := TCardEditForm.Create(nil);
+    //ID := forEdit;
+    Frm.PopUpForm(ThisTable, forEdit, FieldsVals, @RefreshTable, @ClearTrash);
+  end;
+end;
+
+procedure TReferenForm.BtnRemoveClick(Sender: TObject);
+var
+  forRemove, answer: Integer;
+  M: TMeta;
+begin
+  forRemove := Datasource.DataSet.FieldByName('ID').AsInteger;
+  answer := MessageDlg(Format('Вы действительно хотите удалить выбранную запись (ID %d)', [forRemove]), mtCustom, [mbYes, mbNo], 0);
+  if answer = 6 then begin
+    with SQLQuery do begin
+      Close;
+      SQL.Clear;
+      SQL.Text := Format('DELETE FROM %s WHERE ID = %d', [ThisTable.FName, forRemove]);
+      ExecSQL;
+    end;
+    ConnectModule.SQLTransaction.Commit;
+    RefreshTable;
+  end;
 end;
 
 

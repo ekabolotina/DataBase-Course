@@ -1,23 +1,23 @@
 object ReferenForm: TReferenForm
-  Left = 721
+  Left = 459
   Height = 409
-  Top = 113
-  Width = 885
+  Top = 201
+  Width = 896
   Align = alClient
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'ReferenForm'
   ClientHeight = 409
-  ClientWidth = 885
+  ClientWidth = 896
   Constraints.MinHeight = 320
   Constraints.MinWidth = 650
-  PopupMode = pmExplicit
-  PopupParent = MainForm.Owner
+  ParentFont = True
+  PopupMode = pmAuto
   Position = poScreenCenter
   LCLVersion = '1.0.12.0'
   object DBGrid: TDBGrid
     Left = 0
     Height = 320
-    Top = 88
+    Top = 89
     Width = 650
     Color = clWindow
     Columns = <>
@@ -30,6 +30,7 @@ object ReferenForm: TReferenForm
     Scrollbars = ssAutoBoth
     TabOrder = 0
     UseXORFeatures = True
+    OnDblClick = BtnEditClick
     OnTitleClick = DBGridTitleClick
   end
   object FilterGroup: TGroupBox
@@ -75,6 +76,7 @@ object ReferenForm: TReferenForm
     Top = 16
     Width = 59
     Caption = 'Править'
+    OnClick = BtnEditClick
     TabOrder = 3
   end
   object BtnRemove: TButton
@@ -83,7 +85,18 @@ object ReferenForm: TReferenForm
     Top = 16
     Width = 59
     Caption = 'Удалить'
+    OnClick = BtnRemoveClick
     TabOrder = 4
+  end
+  object ScrollBar: TScrollBar
+    Left = 872
+    Height = 410
+    Top = 0
+    Width = 17
+    Kind = sbVertical
+    PageSize = 0
+    Position = 50
+    TabOrder = 5
   end
   object SQLQuery: TSQLQuery
     FieldDefs = <>
