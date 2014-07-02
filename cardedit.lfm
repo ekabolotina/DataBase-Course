@@ -1,0 +1,57 @@
+object CardEditForm: TCardEditForm
+  Left = 887
+  Height = 265
+  Top = 114
+  Width = 463
+  BorderIcons = [biSystemMenu, biMinimize]
+  BorderStyle = bsSingle
+  Caption = 'CardEditForm'
+  ClientHeight = 265
+  ClientWidth = 463
+  OnClose = FormClose
+  PopupMode = pmAuto
+  Position = poScreenCenter
+  LCLVersion = '1.0.12.0'
+  object CardEditGroupBox: TGroupBox
+    Left = 14
+    Height = 161
+    Top = 12
+    Width = 343
+    AutoSize = True
+    Caption = 'Редактировать запись'
+    Constraints.MinWidth = 343
+    TabOrder = 0
+  end
+  object BtnSave: TButton
+    Left = 371
+    Height = 23
+    Top = 15
+    Width = 74
+    Caption = 'Сохранить'
+    Enabled = False
+    OnClick = BtnSaveClick
+    TabOrder = 1
+  end
+  object BtnCancel: TButton
+    Left = 371
+    Height = 23
+    Top = 48
+    Width = 74
+    Caption = 'Отмена'
+    OnClick = BtnCancelClick
+    TabOrder = 2
+  end
+  object CardEditSQLQuery: TSQLQuery
+    FieldDefs = <>
+    Database = ConnectModule.IBConnection
+    Transaction = ConnectModule.SQLTransaction
+    Params = <>
+    left = 77
+    top = 214
+  end
+  object CardEditDataSource: TDatasource
+    DataSet = CardEditSQLQuery
+    left = 152
+    top = 216
+  end
+end
