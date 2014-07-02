@@ -88,7 +88,7 @@ begin
         rows += ', ' + ATable.FFields[i].FName;
   Delete(rows, 1, 1);
   if AConstrains <> '' then
-    consraints := ' WHERE ' + AConstrains
+    consraints := ' ' + AConstrains
   else
     consraints := '';
   Result := 'SELECT ' + rows + ' FROM ' + ATable.FName + ' ' + innerjoins + consraints;
