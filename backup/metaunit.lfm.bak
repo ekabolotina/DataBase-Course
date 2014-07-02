@@ -1,0 +1,7 @@
+object TableInfo: TTableInfo
+  OldCreateOrder = False
+  Height = 50
+  HorizontalOffset = 1047
+  VerticalOffset = 636
+  Width = 124
+end

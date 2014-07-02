@@ -1,0 +1,33 @@
+object ReferenForm: TReferenForm
+  Left = 727
+  Height = 323
+  Top = 214
+  Width = 605
+  Caption = 'ReferenForm'
+  ClientHeight = 323
+  ClientWidth = 605
+  LCLVersion = '1.0.12.0'
+  object DBGrid: TDBGrid
+    Left = 9
+    Height = 311
+    Top = 9
+    Width = 591
+    Color = clWindow
+    Columns = <>
+    DataSource = Datasource
+    TabOrder = 0
+  end
+  object SQLQuery: TSQLQuery
+    FieldDefs = <>
+    Database = ConnectModule.IBConnection
+    Transaction = ConnectModule.SQLTransaction
+    Params = <>
+    left = 21
+    top = 24
+  end
+  object Datasource: TDatasource
+    DataSet = SQLQuery
+    left = 88
+    top = 24
+  end
+end

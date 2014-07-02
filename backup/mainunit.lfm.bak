@@ -1,0 +1,30 @@
+object MainForm: TMainForm
+  Left = 1016
+  Height = 55
+  Top = 118
+  Width = 320
+  Caption = 'SQL Schedule'
+  Menu = MainMenu
+  OnShow = FormShow
+  LCLVersion = '1.0.12.0'
+  object MainMenu: TMainMenu
+    left = 5
+    object MenuFile: TMenuItem
+      Caption = 'Файл'
+      object MenuFile_Exit: TMenuItem
+        Caption = 'Выход'
+        OnClick = MenuFile_ExitClick
+      end
+    end
+    object MenuReferen: TMenuItem
+      Caption = 'Справочники'
+    end
+    object MenuHelp: TMenuItem
+      Caption = 'Справка'
+      object MenuHelp_About: TMenuItem
+        Caption = 'О программе'
+        OnClick = MenuHelp_AboutClick
+      end
+    end
+  end
+end

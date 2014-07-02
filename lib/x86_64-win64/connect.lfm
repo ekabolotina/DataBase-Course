@@ -1,0 +1,27 @@
+object ConnectModule: TConnectModule
+  OldCreateOrder = False
+  Height = 49
+  HorizontalOffset = 1090
+  VerticalOffset = 637
+  Width = 226
+  object IBConnection: TIBConnection
+    Connected = True
+    LoginPrompt = False
+    DatabaseName = 'SCHEDULE.FDB'
+    KeepConnection = False
+    Password = 'masterkey'
+    Transaction = SQLTransaction
+    UserName = 'sysDBA'
+    CharSet = 'Utf8'
+    LogEvents = []
+    left = 16
+    top = 16
+  end
+  object SQLTransaction: TSQLTransaction
+    Active = False
+    Action = caNone
+    Database = IBConnection
+    left = 64
+    top = 16
+  end
+end
