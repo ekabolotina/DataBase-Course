@@ -1,26 +1,31 @@
 object FormSchedule: TFormSchedule
-  Left = 217
-  Height = 405
-  Top = 100
-  Width = 1122
+  Left = 552
+  Height = 600
+  Top = 58
+  Width = 1292
   Caption = 'Срезы расписания'
-  ClientHeight = 405
-  ClientWidth = 1122
-  Constraints.MinHeight = 400
-  Constraints.MinWidth = 745
+  ClientHeight = 600
+  ClientWidth = 1292
+  Constraints.MinHeight = 600
+  Constraints.MinWidth = 1292
   OnShow = FormShow
   Position = poScreenCenter
   LCLVersion = '1.0.12.0'
-  object GroupBox: TGroupBox
-    Left = 10
-    Height = 144
-    Top = 10
-    Width = 1102
-    Align = alTop
-    BorderSpacing.Around = 10
+  object CutGroupBox: TGroupBox
+    AnchorSideLeft.Control = StringGrid
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideBottom.Control = FilterGroupBox
+    Left = 669
+    Height = 145
+    Top = 5
+    Width = 618
+    Align = alRight
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Around = 5
     Caption = 'Срезы'
-    ClientHeight = 126
-    ClientWidth = 1098
+    ClientHeight = 127
+    ClientWidth = 614
+    Constraints.MaxHeight = 145
     TabOrder = 0
     object LabelH: TLabel
       Left = 13
@@ -66,10 +71,10 @@ object FormSchedule: TFormSchedule
       TabOrder = 2
     end
     object CheckGroup: TCheckGroup
-      Left = 300
+      Left = 302
       Height = 108
-      Top = 2
-      Width = 400
+      Top = -2
+      Width = 304
       AutoFill = True
       Caption = 'Отображать поля'
       ChildSizing.LeftRightSpacing = 6
@@ -133,21 +138,35 @@ object FormSchedule: TFormSchedule
   end
   object StringGrid: TStringGrid
     Left = 5
-    Height = 232
-    Top = 168
-    Width = 1112
-    Align = alBottom
+    Height = 590
+    Top = 5
+    Width = 659
+    Align = alLeft
     Anchors = [akTop, akLeft, akRight, akBottom]
     AutoEdit = False
-    BorderSpacing.Left = 5
-    BorderSpacing.Right = 5
-    BorderSpacing.Bottom = 5
+    BorderSpacing.Around = 5
     ColCount = 1
+    DefaultColWidth = 100
     DefaultDrawing = False
-    ExtendedSelect = False
+    DefaultRowHeight = 100
     MouseWheelOption = mwGrid
     RowCount = 1
     TabOrder = 1
+    TabStop = False
+  end
+  object FilterGroupBox: TGroupBox
+    AnchorSideLeft.Control = StringGrid
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = CutGroupBox
+    AnchorSideTop.Side = asrBottom
+    Left = 669
+    Height = 440
+    Top = 152
+    Width = 618
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Top = 200
+    Caption = 'Фильтры'
+    TabOrder = 2
   end
   object ScheduleSQLQuery: TSQLQuery
     FieldDefs = <>

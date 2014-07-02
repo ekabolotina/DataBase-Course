@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, sqldb, db, FileUtil, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, Grids, ExtCtrls, Buttons, MetaUnit, Connect;
+  StdCtrls, Grids, ExtCtrls, Buttons, MetaUnit, Connect, Filters, windows;
 
 type
 
@@ -20,8 +20,9 @@ type
     CheckGroup: TCheckGroup;
     ComboBoxH: TComboBox;
     ComboBoxV: TComboBox;
+    FilterGroupBox: TGroupBox;
     ScheduleDatasource: TDatasource;
-    GroupBox: TGroupBox;
+    CutGroupBox: TGroupBox;
     LabelH: TLabel;
     LabelV: TLabel;
     ScheduleSQLQuery: TSQLQuery;
@@ -34,11 +35,14 @@ type
     ScheduleTable: TTableInfo;
     TablesList: array of String;
     HVals, VVals: array of String;
+    F: TFilters;
+    FillStatus: array of array of Boolean;
     procedure PopUpForm;
     procedure FillHeader(ATable: TTableInfo; HorV: THorV);
     procedure FillItems(AFieldH, AFieldV: Integer);
     procedure FillCheckBoxGroup;
     procedure LoadGrid;
+    procedure FillCell(X, Y: Integer);
   end;
 
 var
@@ -66,8 +70,29 @@ begin
   ComboBoxH.ItemIndex := 0;
   ComboBoxV.ItemIndex := 0;
   ScheduleTable := TMeta.GetTableByName('Schedule_Items');
+  F := TFilters.Create(ScheduleTable, FilterGroupBox, @LoadGrid, 10);
+  F.MkPnl;
   FillCheckBoxGroup;
   LoadGrid;
+end;
+
+
+procedure TFormSchedule.FillCell(X, Y: Integer);
+var
+  i: Integer;
+  Rect: TRect;
+  s: String;
+begin
+  if not FillStatus[X, Y] then begin
+    FillStatus[X, Y] := True;
+    Rect := StringGrid.CellRect(X, Y);
+    for i := 0 to High(ScheduleTable.FFields) do begin
+      s := StringGrid.Cells[X, Y] + ScheduleSQLQuery.Fields[i].AsString + ' ';
+      if CheckGroup.Checked[i] then
+        //DrawText(StringGrid.Canvas.Handle, PChar(Utf8ToAnsi(s)), length(s), Rect, DT_WORDBREAK);
+        StringGrid.Cells[X, Y] := s;
+    end;
+  end;
 end;
 
 procedure TFormSchedule.FillHeader(ATable: TTableInfo; HorV: THorV);
@@ -104,26 +129,43 @@ var
 begin
   X := StringGrid.ColCount - 1;
   Y := StringGrid.RowCount - 1;
+
+  SetLength(FillStatus, X+1, Y+1);
+  for i := 0 to X do
+    for j := 0 to Y do
+      FillStatus[i, j] := False;
+
   with ScheduleSQLQuery do begin
     Close;
     SQL.Clear;
-    SQL.Text := TMeta.MakeQuery(ScheduleTable);
+    SQL.Text := TMeta.MakeQuery(ScheduleTable, F.MakeQuery);
+    for i := 0 to High(F.FilterPanels) do begin
+      with F.FilterPanels[i] do begin
+        if not FCheckBox.Checked then Continue;
+        ParamByName(Format('FConst_Text%d', [i])).AsString := FConstraint.Text;
+      end;
+    end;
     Open;
+    First;
     while not EOF do begin
       for i := 1 to X do
         for j := 1 to Y do
           if (Fields[AFieldH].AsString = HVals[i]) and (Fields[AFieldV].AsString = VVals[j]) then
-            StringGrid.Cells[i, j] := Format('%s %d', [StringGrid.Cells[i, j], Fields[0].AsInteger]);
-      Next;
+            FillCell(i, j);
+        Next;
     end;
   end;
+
 end;
 
 procedure TFormSchedule.LoadGrid;
 var
+  Rect: TRect;
+var
   i, j, FieldH, FieldV: Integer;
   TableH, TableV: TTableInfo;
 begin
+  StringGrid.Clean;
   TableH := Tables[ComboBoxH.ItemIndex];
   TableV := Tables[ComboBoxV.ItemIndex];
   FillHeader(TableH, H);
