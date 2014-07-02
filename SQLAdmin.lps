@@ -4,15 +4,15 @@
     <PathDelim Value="\"/>
     <Version Value="9"/>
     <BuildModes Active="Default"/>
-    <Units Count="6">
+    <Units Count="13">
       <Unit0>
         <Filename Value="SQLAdmin.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="SQLAdmin"/>
         <WindowIndex Value="0"/>
         <TopLine Value="1"/>
-        <CursorPos X="53" Y="21"/>
-        <UsageCount Value="35"/>
+        <CursorPos X="20" Y="21"/>
+        <UsageCount Value="90"/>
       </Unit0>
       <Unit1>
         <Filename Value="mainunit.pas"/>
@@ -23,9 +23,9 @@
         <UnitName Value="MainUnit"/>
         <EditorIndex Value="0"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="54"/>
-        <CursorPos X="39" Y="67"/>
-        <UsageCount Value="35"/>
+        <TopLine Value="49"/>
+        <CursorPos X="50" Y="65"/>
+        <UsageCount Value="90"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit1>
@@ -36,13 +36,10 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
         <UnitName Value="Connect"/>
-        <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="7"/>
-        <CursorPos X="29" Y="16"/>
-        <UsageCount Value="35"/>
-        <Loaded Value="True"/>
-        <LoadedDesigner Value="True"/>
+        <TopLine Value="1"/>
+        <CursorPos X="17" Y="15"/>
+        <UsageCount Value="90"/>
       </Unit2>
       <Unit3>
         <Filename Value="referen.pas"/>
@@ -51,11 +48,13 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Referen"/>
-        <EditorIndex Value="3"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="2"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="8"/>
-        <CursorPos X="11" Y="13"/>
-        <UsageCount Value="35"/>
+        <TopLine Value="70"/>
+        <CursorPos X="10" Y="111"/>
+        <FoldState Value=" T3jV0{A T0mVcGR"/>
+        <UsageCount Value="90"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit3>
@@ -63,145 +62,204 @@
         <Filename Value="metaunit.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="MetaUnit"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="66"/>
-        <CursorPos X="22" Y="42"/>
-        <UsageCount Value="33"/>
+        <TopLine Value="27"/>
+        <CursorPos X="32" Y="107"/>
+        <UsageCount Value="88"/>
         <Loaded Value="True"/>
       </Unit4>
       <Unit5>
+        <Filename Value="cardinsert.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="CardInsertForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="cardinsert"/>
+        <EditorIndex Value="3"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="39"/>
+        <CursorPos X="28" Y="53"/>
+        <UsageCount Value="28"/>
+        <Loaded Value="True"/>
+        <LoadedDesigner Value="True"/>
+      </Unit5>
+      <Unit6>
         <Filename Value="C:\lazarus\lcl\include\menuitem.inc"/>
         <WindowIndex Value="0"/>
         <TopLine Value="72"/>
         <CursorPos X="41" Y="83"/>
+        <UsageCount Value="6"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="C:\Langs\lazarus\fpc\2.6.2\source\rtl\win32\classes.pp"/>
+        <UnitName Value="Classes"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="85"/>
+        <CursorPos X="45" Y="47"/>
+        <UsageCount Value="6"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="C:\Langs\lazarus\lcl\forms.pp"/>
+        <UnitName Value="Forms"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="148"/>
+        <CursorPos X="40" Y="165"/>
+        <UsageCount Value="7"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="C:\lazarus\lcl\include\control.inc"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="2706"/>
+        <CursorPos X="1" Y="2718"/>
+        <UsageCount Value="6"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="C:\lazarus\lcl\grids.pas"/>
+        <UnitName Value="Grids"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="10908"/>
+        <CursorPos X="1" Y="10920"/>
+        <UsageCount Value="9"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="C:\lazarus\lcl\include\customcombobox.inc"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="909"/>
+        <CursorPos X="1" Y="921"/>
+        <UsageCount Value="8"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="C:\lazarus\lcl\include\customform.inc"/>
+        <WindowIndex Value="0"/>
+        <TopLine Value="2178"/>
+        <CursorPos X="1" Y="2190"/>
         <UsageCount Value="10"/>
-      </Unit5>
+      </Unit12>
     </Units>
     <General>
       <ActiveWindowIndexAtStart Value="0"/>
     </General>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="87" Column="65" TopLine="72"/>
+        <Filename Value="referen.pas"/>
+        <Caret Line="310" Column="7" TopLine="300"/>
       </Position1>
       <Position2>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="86" Column="56" TopLine="72"/>
+        <Filename Value="referen.pas"/>
+        <Caret Line="309" Column="7" TopLine="299"/>
       </Position2>
       <Position3>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="88" Column="87" TopLine="72"/>
+        <Filename Value="referen.pas"/>
+        <Caret Line="36" Column="8" TopLine="19"/>
       </Position3>
       <Position4>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="86" Column="82" TopLine="72"/>
+        <Filename Value="referen.pas"/>
+        <Caret Line="37" Column="8" TopLine="19"/>
       </Position4>
       <Position5>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="88" Column="53" TopLine="72"/>
+        <Filename Value="referen.pas"/>
+        <Caret Line="38" Column="8" TopLine="19"/>
       </Position5>
       <Position6>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="86" Column="49" TopLine="72"/>
+        <Filename Value="referen.pas"/>
+        <Caret Line="40" Column="8" TopLine="19"/>
       </Position6>
       <Position7>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="89" Column="52" TopLine="72"/>
+        <Filename Value="referen.pas"/>
+        <Caret Line="322" Column="45" TopLine="306"/>
       </Position7>
       <Position8>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="86" Column="80" TopLine="72"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="25" Column="17" TopLine="8"/>
       </Position8>
       <Position9>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="82" Column="9" TopLine="72"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="23" Column="49" TopLine="7"/>
       </Position9>
       <Position10>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="86" Column="58" TopLine="72"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="27" Column="49" TopLine="7"/>
       </Position10>
       <Position11>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="89" Column="42" TopLine="74"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="34" Column="49" TopLine="11"/>
       </Position11>
       <Position12>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="86" Column="53" TopLine="72"/>
+        <Filename Value="referen.pas"/>
+        <Caret Line="316" Column="18" TopLine="306"/>
       </Position12>
       <Position13>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="13" Column="82" TopLine="5"/>
+        <Filename Value="referen.pas"/>
+        <Caret Line="322" Column="39" TopLine="307"/>
       </Position13>
       <Position14>
-        <Filename Value="mainunit.pas"/>
-        <Caret Line="56" Column="385" TopLine="38"/>
+        <Filename Value="referen.pas"/>
+        <Caret Line="333" Column="25" TopLine="313"/>
       </Position14>
       <Position15>
-        <Filename Value="referen.pas"/>
-        <Caret Line="15" Column="77" TopLine="10"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="49" Column="31" TopLine="32"/>
       </Position15>
       <Position16>
-        <Filename Value="referen.pas"/>
-        <Caret Line="16" Column="77" TopLine="9"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="21" Column="27" TopLine="13"/>
       </Position16>
       <Position17>
-        <Filename Value="referen.pas"/>
-        <Caret Line="15" Column="77" TopLine="9"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="38" Column="11" TopLine="22"/>
       </Position17>
       <Position18>
-        <Filename Value="mainunit.pas"/>
-        <Caret Line="74" Column="3" TopLine="42"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="40" Column="11" TopLine="24"/>
       </Position18>
       <Position19>
-        <Filename Value="mainunit.pas"/>
-        <Caret Line="46" Column="15" TopLine="34"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="41" Column="11" TopLine="25"/>
       </Position19>
       <Position20>
-        <Filename Value="mainunit.pas"/>
-        <Caret Line="63" Column="8" TopLine="43"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="40" Column="11" TopLine="24"/>
       </Position20>
       <Position21>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="91" Column="52" TopLine="58"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="38" Column="3" TopLine="24"/>
       </Position21>
       <Position22>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="92" Column="79" TopLine="75"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="37" Column="3" TopLine="23"/>
       </Position22>
       <Position23>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="77" Column="89" TopLine="64"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="42" Column="49" TopLine="28"/>
       </Position23>
       <Position24>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="72" Column="157" TopLine="60"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="41" Column="5" TopLine="29"/>
       </Position24>
       <Position25>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="85" Column="37" TopLine="70"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="46" Column="39" TopLine="35"/>
       </Position25>
       <Position26>
-        <Filename Value="referen.pas"/>
-        <Caret Line="15" Column="37" TopLine="10"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="50" Column="17" TopLine="35"/>
       </Position26>
       <Position27>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="85" Column="28" TopLine="74"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="47" Column="38" TopLine="29"/>
       </Position27>
       <Position28>
-        <Filename Value="metaunit.pas"/>
-        <Caret Line="74" Column="7" TopLine="65"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="22" Column="17" TopLine="11"/>
       </Position28>
       <Position29>
-        <Filename Value="referen.pas"/>
-        <Caret Line="19" Column="18" TopLine="10"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="40" Column="6" TopLine="34"/>
       </Position29>
       <Position30>
-        <Filename Value="referen.pas"/>
-        <Caret Line="18" Column="18" TopLine="10"/>
+        <Filename Value="cardinsert.pas"/>
+        <Caret Line="51" Column="32" TopLine="40"/>
       </Position30>
     </JumpHistory>
   </ProjectSession>
