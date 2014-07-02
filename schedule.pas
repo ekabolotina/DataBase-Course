@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, sqldb, db, FileUtil, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, Grids, MetaUnit, Connect;
+  StdCtrls, Grids, ExtCtrls, Buttons, MetaUnit, Connect;
 
 type
 
@@ -16,6 +16,8 @@ type
 
   TFormSchedule = class(TForm)
     BtnSubmit: TButton;
+    BtnSwitch: TSpeedButton;
+    CheckGroup: TCheckGroup;
     ComboBoxH: TComboBox;
     ComboBoxV: TComboBox;
     ScheduleDatasource: TDatasource;
@@ -25,6 +27,8 @@ type
     ScheduleSQLQuery: TSQLQuery;
     StringGrid: TStringGrid;
     procedure BtnSubmitClick(Sender: TObject);
+    procedure BtnSwitchClick(Sender: TObject);
+    procedure CheckGroupItemClick(Sender: TObject; Index: integer);
     procedure FormShow(Sender: TObject);
   public
     ScheduleTable: TTableInfo;
@@ -33,12 +37,24 @@ type
     procedure PopUpForm;
     procedure FillHeader(ATable: TTableInfo; HorV: THorV);
     procedure FillItems(AFieldH, AFieldV: Integer);
+    procedure FillCheckBoxGroup;
+    procedure LoadGrid;
   end;
 
 var
   FormSchedule: TFormSchedule;
 
 implementation
+
+procedure TFormSchedule.FillCheckBoxGroup;
+var
+  i: Integer;
+begin
+  for i := 0 to High(ScheduleTable.FFields) do begin
+    CheckGroup.Items.Add(ScheduleTable.FFields[i].FCaption);
+    CheckGroup.Checked[i] := True;
+  end;
+end;
 
 procedure TFormSchedule.FormShow(Sender: TObject);
 var i:integer;
@@ -50,7 +66,8 @@ begin
   ComboBoxH.ItemIndex := 0;
   ComboBoxV.ItemIndex := 0;
   ScheduleTable := TMeta.GetTableByName('Schedule_Items');
-  StringGrid.Canvas.TextRect(StringGrid.CellRect(0,0), 0, 0, 'simpletext');
+  FillCheckBoxGroup;
+  LoadGrid;
 end;
 
 procedure TFormSchedule.FillHeader(ATable: TTableInfo; HorV: THorV);
@@ -102,7 +119,7 @@ begin
   end;
 end;
 
-procedure TFormSchedule.BtnSubmitClick(Sender: TObject);
+procedure TFormSchedule.LoadGrid;
 var
   i, j, FieldH, FieldV: Integer;
   TableH, TableV: TTableInfo;
@@ -122,6 +139,26 @@ begin
     end;
 
   FillItems(FieldH, FieldV);
+end;
+
+procedure TFormSchedule.BtnSubmitClick(Sender: TObject);
+begin
+  LoadGrid;
+end;
+
+procedure TFormSchedule.BtnSwitchClick(Sender: TObject);
+var
+  tmp: Integer;
+begin
+  tmp := ComboBoxV.ItemIndex;
+  ComboBoxV.ItemIndex := ComboBoxH.ItemIndex;
+  ComboBoxH.ItemIndex := tmp;
+  LoadGrid;
+end;
+
+procedure TFormSchedule.CheckGroupItemClick(Sender: TObject; Index: integer);
+begin
+
 end;
 
 procedure TFormSchedule.PopUpForm;
