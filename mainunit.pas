@@ -19,6 +19,7 @@ type
     MenuReferen: TMenuItem;
     MenuFile_Exit: TMenuItem;
     MenuHelp_About: TMenuItem;
+    procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure MenuFile_ExitClick(Sender: TObject);
     procedure MenuHelp_AboutClick(Sender: TObject);
@@ -28,7 +29,7 @@ type
     { private declarations }
   public
     MenuItems: array of TMenuItem;
-    AT: Tmeta;
+    AT: TMeta;
     { public declarations }
   end;
 
@@ -50,8 +51,8 @@ begin
     MenuItems[High(MenuItems)] := TMenuItem.Create(MenuReferen);
     with MenuItems[High(MenuItems)] do begin
       Tag := i;
-      Caption := Tables[i].Caption;
-      Name := 'MI_' + Tables[i].Name;
+      Caption := Tables[i].FCaption;
+      Name := 'MI_' + Tables[i].FName;
       OnClick := @MenuTable_Show;
     end;
   end;
@@ -60,23 +61,51 @@ end;
 
 procedure TMainForm.FormShow(Sender: TObject);
 begin
-  AT.AddTable('Subjects', 'Предметы', 1, ['name', 'Название'], [20], ['', '']);
-  AT.AddTable('Subject_Types', 'Виды занятий', 1, ['name', 'Вид'], [10], ['', '']);
-  AT.AddTable('Professors', 'Преподаватели', 1, ['name', 'ФИО'], [15], ['', '']);
-  AT.AddTable('Times', 'Пары', 2, ['"Begin"', 'Начало', '"End"', 'Окончание'], [10, 5], ['', '', '', '']);
-  AT.AddTable('Days', 'Дни', 1, ['name', 'День'], [15], ['', '']);
-  AT.AddTable('Groups', 'Группы', 2, ['name', 'Номер', 'Group_Size', 'Размер'], [7, 5], ['', '', '', '']);
-  AT.AddTable('Rooms', 'Аудитории', 2, ['name', 'Номер', '"Size"', 'Вместимость'], [15, 10], ['', '', '', '']);
-  AT.AddTable('Professors_Subjects', 'Преподаватели - предметы', 2, ['Professor_ID', 'Преподаватель', 'Subject_ID', 'Предмет'], [15, 15], ['Professors', 'ID', 'Subjects', 'ID']);
-  AT.AddTable('Subjects_Groups', 'Предметы - группы', 2, ['Subject_ID', 'Предмет', 'Group_ID', 'Группа'], [15, 15], ['Subjects', 'ID', 'Groups', 'ID']);
-  AT.AddTable('Schedule_Items', 'Расписание', 8, ['Subject_ID', 'Предмет', 'Subject_Type_ID', 'Вид занятия', 'Professor_ID', 'Преподаватель', 'Time_Index', 'Пара', 'Day_Index', 'День недели', 'Group_ID', 'Группа', 'Room_ID', 'Аудитория', 'Week', 'Неделя (чет/нечет)'], [20, 3, 10, 3, 7, 6, 5, 3], ['Subjects', 'ID', 'Subject_Types', 'ID', 'Professors', 'ID', '', '', 'Days', '"Index"', 'Groups', 'ID', 'Rooms', 'ID', '', '']);
+  AT.AddTable('Subjects', 'Предметы', [MkFld('name', 'Название', 20)]);
+  AT.AddTable('Subject_Types', 'Виды занятий', [MkFld('name', 'Вид', 10)]);
+  AT.AddTable('Professors', 'Преподаватели', [MkFld('name', 'ФИО', 15)]);
+  AT.AddTable('Times', 'Пары', [
+    MkFld('"Begin"', 'Начало', 10),
+    MkFld('"End"', 'Окончание', 5)
+  ]);
+  AT.AddTable('Days', 'Дни', [MkFld('name', 'День', 15)]);
+  AT.AddTable('Groups', 'Группы', [
+    MkFld('name', 'Номер', 7),
+    MkFld('Group_Size', 'Размер', 5)
+  ]);
+  AT.AddTable('Rooms', 'Аудитории', [
+    MkFld('name', 'Номер', 15),
+    MkFld('"Size"', 'Вместимость', 10)
+  ]);
+  AT.AddTable('Professors_Subjects', 'Преподаватели - предметы', [
+    MkFld('Professor_ID', 'Преподаватель', 10,'Professors', 'ID'),
+    MkFld('Subject_ID', 'Предмет', 10,'Subjects', 'ID')
+  ]);
+  AT.AddTable('Subjects_Groups', 'Предметы - группы', [
+    MkFld('Subject_ID', 'Предмет', 15, 'Subjects', 'ID'),
+    MkFld('Group_ID', 'Группа', 15, 'Groups', 'ID')
+  ]);
+  AT.AddTable('Schedule_Items', 'Расписание', [
+    MkFld('Subject_ID', 'Предмет', 20, 'Subjects', 'ID'),
+    MkFld('Subject_Type_ID', 'Вид занятия', 3, 'Subject_Types', 'ID'),
+    MkFld('Professor_ID', 'Преподаватель', 10, 'Professors', 'ID'),
+    MkFld('Time_Index', 'Пара', 3),
+    MkFld('Day_Index', 'День недели', 7, 'Days', '"Index"'),
+    MkFld('Group_ID', 'Группа', 6, 'Groups', 'ID'),
+    MkFld('Room_ID', 'Аудитория', 5,'Rooms', 'ID'),
+    MkFld('Week', 'Неделя (чет/нечет)', 3)
+  ]);
 
   MakeUpTableList();
 end;
 
+procedure TMainForm.FormCreate(Sender: TObject);
+begin
+end;
+
 procedure TMainForm.MenuTable_Show(Sender: TObject);
 begin
-  Tables[(Sender as TMenuItem).Tag].ShowTable();
+  ReferenForm.PopupForm(Tables[(Sender as TMenuItem).Tag]);
 end;
 
 procedure TMainForm.MenuFile_ExitClick(Sender: TObject);

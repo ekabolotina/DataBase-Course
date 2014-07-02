@@ -1,10 +1,11 @@
 object MainForm: TMainForm
-  Left = 1016
+  Left = 1027
   Height = 55
-  Top = 122
+  Top = 487
   Width = 320
   Caption = 'SQL Schedule'
   Menu = MainMenu
+  OnCreate = FormCreate
   OnShow = FormShow
   LCLVersion = '1.0.12.0'
   object MainMenu: TMainMenu
