@@ -1,9 +1,10 @@
 object CardInsertForm: TCardInsertForm
-  Left = 868
+  Left = 910
   Height = 265
-  Top = 83
+  Top = 105
   Width = 463
   BorderIcons = [biSystemMenu, biMinimize]
+  BorderStyle = bsSingle
   Caption = 'CardInsertForm'
   ClientHeight = 265
   ClientWidth = 463
@@ -17,6 +18,7 @@ object CardInsertForm: TCardInsertForm
     Top = 15
     Width = 74
     Caption = 'Сохранить'
+    OnClick = BtnSaveClick
     TabOrder = 0
   end
   object BtnCancel: TButton
@@ -24,7 +26,7 @@ object CardInsertForm: TCardInsertForm
     Height = 23
     Top = 48
     Width = 74
-    Caption = 'Отмена'
+    Caption = 'Закрыть'
     OnClick = BtnCancelClick
     TabOrder = 1
   end
@@ -37,5 +39,13 @@ object CardInsertForm: TCardInsertForm
     Caption = 'Вставить запись'
     Constraints.MinWidth = 343
     TabOrder = 2
+  end
+  object CardInsertSQLQuery: TSQLQuery
+    FieldDefs = <>
+    Database = ConnectModule.IBConnection
+    Transaction = ConnectModule.SQLTransaction
+    Params = <>
+    left = 408
+    top = 216
   end
 end
