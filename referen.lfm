@@ -1,33 +1,84 @@
 object ReferenForm: TReferenForm
-  Left = 727
-  Height = 323
-  Top = 214
-  Width = 605
+  Left = 746
+  Height = 320
+  Top = 126
+  Width = 600
+  Align = alClient
   Caption = 'ReferenForm'
-  ClientHeight = 323
-  ClientWidth = 605
+  ClientHeight = 320
+  ClientWidth = 600
+  Constraints.MinHeight = 320
+  Constraints.MinWidth = 600
+  OnResize = FormResize
   LCLVersion = '1.0.12.0'
   object DBGrid: TDBGrid
-    Left = 9
-    Height = 311
-    Top = 9
-    Width = 591
+    Left = 0
+    Height = 320
+    Top = 80
+    Width = 600
     Color = clWindow
     Columns = <>
+    Constraints.MinHeight = 320
+    Constraints.MinWidth = 600
     DataSource = Datasource
+    Scrollbars = ssAutoBoth
     TabOrder = 0
+  end
+  object FilterFieldsList: TComboBox
+    Left = 12
+    Height = 23
+    Top = 27
+    Width = 100
+    AutoSelect = False
+    ItemHeight = 15
+    Style = csDropDownList
+    TabOrder = 1
+  end
+  object FilterSignsList: TComboBox
+    Left = 128
+    Height = 23
+    Top = 27
+    Width = 50
+    ItemHeight = 15
+    ItemIndex = 0
+    Items.Strings = (
+      '>'
+      '<'
+      '='
+      '>='
+      '<='
+    )
+    Style = csDropDownList
+    TabOrder = 2
+    Text = '>'
+  end
+  object FilterConstraint: TEdit
+    Left = 191
+    Height = 23
+    Top = 27
+    Width = 265
+    TabOrder = 3
+  end
+  object FilterSubmit: TButton
+    Left = 472
+    Height = 23
+    Top = 27
+    Width = 64
+    Caption = 'Обновить'
+    OnClick = FilterSubmitClick
+    TabOrder = 4
   end
   object SQLQuery: TSQLQuery
     FieldDefs = <>
     Database = ConnectModule.IBConnection
     Transaction = ConnectModule.SQLTransaction
     Params = <>
-    left = 21
-    top = 24
+    left = 424
+    top = 160
   end
   object Datasource: TDatasource
     DataSet = SQLQuery
-    left = 88
-    top = 24
+    left = 488
+    top = 160
   end
 end
