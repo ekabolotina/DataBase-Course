@@ -5,95 +5,104 @@ unit MetaUnit;
 interface
 
 uses
-  Classes, SysUtils, Connect, Referen;
+  Classes, SysUtils;
 
 type
 
-  Tmeta = class
+  TFieldInfo = class
   public
-    procedure AddTable(tn, tc: String; count: Integer; rows_n: array of String; rows_c: array of Integer; f_k: array of String);
-  end;
-
-  TFieldInto = class
-    Name, Caption, ForeignKeyTable, ForeignKeyRow: String;
-    Width: Integer;
-    constructor Create(n, c: String; w: Integer; f_k_t, f_k_r: String);
+    FName, FCaption, FForeignKeyTable, FForeignKeyRow: String;
+    FWidth: Integer;
+    constructor Create(
+      AName, ACaption: String; AWidth: Integer;
+      AForeignKeyTable: String = '';
+      AForeignKeyRow: String = '');
   end;
 
   TTableInfo = class
-    Fields: array of TFieldInto;
-    Name, Caption: String;
-    constructor Create(f: array of TFieldInto; n, c: String);
-    procedure ShowTable();
+  public
+    FName, FCaption: String;
+    FFields: array of TFieldInfo;
+    constructor Create(AName, ACaption: String; AFields: array of TFieldInfo);
   end;
+
+  TMeta = class
+  public
+    procedure AddTable(AName, ACaption: String; AFields: array of TFieldInfo);
+    procedure AddTable(ATable: TTableInfo);
+    function MakeQuery(ATable: TTableInfo; AConstrains: string = ''): String;
+  end;
+
+function MkFld(AName, ACaption: String; AWidth: Integer;
+    AForeignKeyTable: String = '';
+    AForeignKeyRow: String = ''): TFieldInfo;
 
 var
   Tables: array of TTableInfo;
 
 implementation
 
-constructor TFieldInto.Create(n, c: String; w: Integer; f_k_t, f_k_r: String);
+function MkFld(AName, ACaption: String; AWidth: Integer;
+    AForeignKeyTable: String = '';
+    AForeignKeyRow: String = ''): TFieldInfo;
 begin
-  Name := n;
-  Caption := c;
-  Width := w;
-  ForeignKeyTable := f_k_t;
-  ForeignKeyRow := f_k_r;
+  Result := TFieldInfo.Create(
+    AName, ACaption, AWidth, AForeignKeyTable, AForeignKeyRow);
 end;
 
-constructor TTableInfo.Create(f: array of TFieldInto; n, c: String);
+constructor TFieldInfo.Create(
+  AName, ACaption: String; AWidth: Integer;
+  AForeignKeyTable, AForeignKeyRow: String);
+begin
+  FName := AName;
+  FCaption := ACaption;
+  FWidth := AWidth;
+  FForeignKeyTable := AForeignKeyTable;
+  FForeignKeyRow := AForeignKeyRow;
+end;
+
+constructor TTableInfo.Create(AName, ACaption: String; AFields: array of TFieldInfo);
 var
   i: Integer;
 begin
-  for i := 0 to High(f) do begin
-    SetLength(Fields, Length(Fields)+1);
-    Fields[i] := f[i];
-  end;
-  Name := n;
-  Caption := c;
+  FName := AName;
+  FCaption := ACaption;
+  SetLength(FFields, Length(AFields));
+  for i := 0 to High(AFields) do
+    FFields[i] := AFields[i];
 end;
 
-procedure TTableInfo.ShowTable();
+function TMeta.MakeQuery(ATable: TTableInfo; AConstrains: string = ''): String;
 var
-  rows, innerjoins: String;
+  rows, innerjoins, consraints: String;
   i: Integer;
 begin
-  ReferenForm := TReferenForm.Create(nil);
   rows := '';
   innerjoins := '';
-  for i := 0 to High(Fields) do begin
-    if Fields[i].ForeignKeyTable <> '' then begin
-      rows := rows + ', ' + Fields[i].ForeignKeyTable + '.Name';
-      innerjoins := innerjoins + 'INNER JOIN ' + Fields[i].ForeignKeyTable + ' ON ' + Name + '.' + Fields[i].Name + ' = ' + Fields[i].ForeignKeyTable + '.' + Fields[i].ForeignKeyRow + ' ';
-    end else
-      rows := rows + ',' + Fields[i].Name;
-  end;
+  for i := 0 to High(ATable.FFields) do
+    with ATable.FFields[i] do
+      if FForeignKeyTable <> '' then begin
+        rows += ', ' + FForeignKeyTable + '.Name';
+        innerjoins += 'INNER JOIN ' + FForeignKeyTable + ' ON ' + ATable.FName + '.' + FName + ' = ' + FForeignKeyTable + '.' + FForeignKeyRow + ' ';
+      end else
+        rows += ', ' + ATable.FFields[i].FName;
   Delete(rows, 1, 1);
-  ReferenForm.SQLQuery.SQL.Text := 'SELECT ' + rows + ' FROM ' + Name + ' ' + innerjoins;
-  ReferenForm.SQLQuery.Open;
-  for i := 0 to High(Fields) do begin
-    ReferenForm.DBGrid.Columns[i].Title.Caption := Fields[i].Caption;
-    ReferenForm.DBGrid.Columns[i].Width := Fields[i].Width * 10;
-  end;
-  ReferenForm.Caption := Caption;
-  ReferenForm.Show;
+  if AConstrains <> '' then
+    consraints := ' WHERE ' + AConstrains
+  else
+    consraints := '';
+  Result := 'SELECT ' + rows + ' FROM ' + ATable.FName + ' ' + innerjoins + consraints;
 end;
 
-procedure Tmeta.AddTable(tn, tc: String; count: Integer; rows_n: array of String; rows_c: array of Integer; f_k: array of String);
-var
-  i, k: Integer;
-  Fields: array of TFieldInto;
+procedure TMeta.AddTable(AName, ACaption: String; AFields: array of TFieldInfo);
 begin
-  i := 0;
-  k := 0;
-  while i < 2 * count do begin
-    SetLength(Fields, Length(Fields)+1);
-    Fields[k] := TFieldInto.Create(rows_n[i], rows_n[i+1], rows_c[k], f_k[i], f_k[i+1]);
-    i := i+2;
-    inc(k);
-  end;
+  AddTable(TTableInfo.Create(AName, ACaption, AFields));
+end;
+
+procedure TMeta.AddTable(ATable: TTableInfo);
+begin
   SetLength(Tables, Length(Tables)+1);
-  Tables[High(Tables)] := TTableInfo.Create(Fields, tn, tc);
+  Tables[High(Tables)] := ATable;
 end;
 
 end.
