@@ -6,23 +6,36 @@ interface
 
 uses
   Classes, SysUtils, sqldb, db, BufDataset, FileUtil, Forms, Controls, Graphics,
-  Dialogs, DBGrids, StdCtrls, ExtCtrls, Connect, MetaUnit;
+  Dialogs, DBGrids, StdCtrls, ExtCtrls, DbCtrls, Connect, MetaUnit, CardInsert;
 
 type
 
   { TReferenForm }
 
+  TFilters = record
+    FPanel: TPanel;
+    FFieldsList: TComboBox;
+    FSignsList: TComboBox;
+    FConstraint: TEdit;
+    FRemove: TButton;
+    FCheckBox: TCheckBox;
+  end;
+
   TReferenForm = class(TForm)
     BtnAddFilter: TButton;
+    BtnInsert: TButton;
+    BtnEdit: TButton;
+    BtnRemove: TButton;
     FilterSubmit: TButton;
     Datasource: TDatasource;
     DBGrid: TDBGrid;
     FilterGroup: TGroupBox;
     SQLQuery: TSQLQuery;
     procedure BtnAddFilterClick(Sender: TObject);
+    procedure BtnInsertClick(Sender: TObject);
     procedure DBGridTitleClick(Column: TColumn);
     procedure FilterSubmitClick(Sender: TObject);
-    procedure FormResize(Sender: TObject);
+    //procedure FormResize(Sender: TObject);
     procedure PopupForm(ATable: TTableInfo);
     procedure ShowTable(ATable: TTableInfo; ADBGrid: TDBGrid; AQuery: String);
     procedure SwitchUpdateBtn(Sender: TObject);
@@ -31,16 +44,15 @@ type
   public
     ThisTable: TTableInfo;
     ThisQuery: String;
-    FilterPanels: array of TPanel;
-    FilterFieldsLists: array of TComboBox;
-    FilterSignsLists: array of TComboBox;
-    FilterConstraints: array of TEdit;
-    FilterRemove: array of TButton;
     FilterType: TComboBox;
+    SortStatus: array of (NONE, DESC, ASC);
+    SortType, SortIcon: String;
+    SortIndex: Integer;
     FilterStrList: array of String;
-    FilterCheckBoxes: array of TCheckBox;
-    SortStatus: array of Integer;
+    FilterPanels: array of TFilters;
+    InsFrm: TCardInsertForm;
     procedure MkPnl();
+    function MakeLocalQuery(): String;
   end;
 
 var
@@ -51,13 +63,24 @@ implementation
 procedure TReferenForm.ShowTable(ATable: TTableInfo; ADBGrid: TDBGrid; AQuery: String);
 var
   i: Integer;
+  FSortIcon: String;
 begin
   SQLQuery.Close;
   SQLQuery.SQL.Text := AQuery;
+  for i := 0 to High(FilterPanels) do begin
+    with FilterPanels[i] do begin
+      if not FCheckBox.Checked then Continue;
+      SQLQuery.ParamByName('FConst_Text' + IntToStr(i)).AsString := FConstraint.Text;
+    end;
+  end;
   SQLQuery.Open;
   for i := 0 to High(ATable.FFields) do begin
-    ADBGrid.Columns[i].Title.Caption := ATable.FFields[i].FCaption;
-    ADBGrid.Columns[i].Width := ATable.FFields[i].FWidth * 10;
+    if i = SortIndex then
+      FSortIcon := ' ' + SortIcon
+    else
+      FSortIcon := '';
+    ADBGrid.Columns[i].Title.Caption := ATable.FFields[i].FCaption + FSortIcon;
+    ADBGrid.Columns[i].Width := ATable.FFields[i].FWidth * 10 + 5;
   end;
 end;
 
@@ -69,28 +92,24 @@ end;
 procedure TReferenForm.FilterEnDis(Sender: TObject);
 var
   FTag: Integer;
+  FStatus: Boolean;
 begin
   FTag := (Sender as TCheckBox).Tag;
-  FilterFieldsLists[FTag].Enabled :=
-    not(FilterFieldsLists[FTag].Enabled);
-  FilterSignsLists[FTag].Enabled :=
-    not(FilterSignsLists[FTag].Enabled);
-  FilterConstraints[FTag].Enabled :=
-    not(FilterConstraints[FTag].Enabled);
+  FStatus := not FilterPanels[FTag].FFieldsList.Enabled;
+  with FilterPanels[FTag] do begin
+    FFieldsList.Enabled := FStatus;
+    FSignsList.Enabled := FStatus;
+    FConstraint.Enabled := FStatus;
+  end;
   SwitchUpdateBtn(Sender);
 end;
 
 procedure TReferenForm.RemoveFilter(Sender: TObject);
 begin
-  FilterPanels[High(FilterPanels)].Free;
-  SetLength(FilterPanels, High(FilterPanels));
-  SetLength(FilterFieldsLists, Length(FilterPanels));
-  SetLength(FilterSignsLists, Length(FilterPanels));
-  SetLength(FilterConstraints, Length(FilterPanels));
-  SetLength(FilterRemove, Length(FilterPanels));
-  SetLength(FilterCheckBoxes, Length(FilterPanels));
+  FilterPanels[High(FilterPanels)].FPanel.Free;
+  SetLength(FilterPanels, Length(FilterPanels)-1);
   if Length(FilterPanels) <> 1 then
-    FilterRemove[High(FilterRemove)].Visible := True;
+    FilterPanels[High(FilterPanels)].FRemove.Visible := True;
   FilterGroup.Height := FilterGroup.Height - 40;
   DBGrid.Top := DBGrid.Top - 40;
   SwitchUpdateBtn(Sender);
@@ -99,91 +118,89 @@ end;
 procedure TReferenForm.MkPnl();
 begin
   SetLength(FilterPanels, Length(FilterPanels)+1);
-  FilterPanels[High(FilterPanels)] := TPanel.Create(nil);
+
   with FilterPanels[High(FilterPanels)] do begin
-    Width := 510;
-    Height := 40;
-    Top := High(FilterPanels) * 40;
-    Left := 8;
-    Parent := FilterGroup;
-  end;
+    FPanel := TPanel.Create(nil);
+    with FPanel do begin
+      Width := 510;
+      Height := 40;
+      Top := High(FilterPanels) * 40;
+      Left := 8;
+      Parent := Self.FilterGroup;
+    end;
 
-  SetLength(FilterCheckBoxes, Length(FilterCheckBoxes)+1);
-  FilterCheckBoxes[High(FilterCheckBoxes)] := TCheckBox.Create(nil);
-  with FilterCheckBoxes[High(FilterCheckBoxes)] do begin
-    Top := 10;
-    Left := 18;
-    Checked := True;
-    Tag := High(FilterCheckBoxes);
-    OnChange := @FilterEnDis;
-    Parent := FilterPanels[High(FilterPanels)];
-  end;
+    FCheckBox := TCheckBox.Create(nil);
+    with FCheckBox do begin
+      Top := 10;
+      Left := 18;
+      Checked := True;
+      Tag := High(FilterPanels);
+      OnChange := @FilterEnDis;
+      Parent := FPanel;
+    end;
 
-  SetLength(FilterFieldsLists, Length(FilterFieldsLists)+1);
-  FilterFieldsLists[High(FilterFieldsLists)] := TComboBox.Create(nil);
-  with FilterFieldsLists[High(FilterFieldsLists)] do begin
-    Width := 100;
-    Height := 23;
-    Top := 8;
-    Left := 50;
-    ReadOnly := True;
-    Items.AddStrings(FilterStrList);
-    ItemIndex := 0;
-    OnChange := @SwitchUpdateBtn;
-    Parent := FilterPanels[High(FilterPanels)];
-  end;
-
-  SetLength(FilterSignsLists, Length(FilterSignsLists)+1);
-  FilterSignsLists[High(FilterSignsLists)] := TComboBox.Create(nil);
-  with FilterSignsLists[High(FilterSignsLists)] do begin
-    Width := 50;
-    Height := 23;
-    Top := 8;
-    Left := 160;
-    ReadOnly := True;
-    Items.AddStrings(['>', '<', '=', '>=', '<=', '<>']);
-    ItemIndex := 0;
-    OnChange := @SwitchUpdateBtn;
-    Parent := FilterPanels[High(FilterPanels)];
-  end;
-
-  SetLength(FilterConstraints, Length(FilterConstraints)+1);
-  FilterConstraints[High(FilterConstraints)] := TEdit.Create(nil);
-  with FilterConstraints[High(FilterConstraints)] do begin
-    Width := 220;
-    Height := 23;
-    Top := 8;
-    Left := 220;
-    OnChange := @SwitchUpdateBtn;
-    Parent := FilterPanels[High(FilterPanels)];
-  end;
-
-  SetLength(FilterRemove, Length(FilterRemove)+1);
-  if Length(FilterPanels) <> 1 then begin
-    FilterRemove[High(FilterRemove)] := TButton.Create(nil);
-    with FilterRemove[High(FilterRemove)] do begin
-      Width := 23;
+    FFieldsList := TComboBox.Create(nil);
+    with FFieldsList do begin
+      Width := 100;
       Height := 23;
       Top := 8;
-      Left := 462;
-      Caption := '-';
-      OnClick := @RemoveFilter;
-      Parent := FilterPanels[High(FilterPanels)];
+      Left := 50;
+      ReadOnly := True;
+      Items.AddStrings(FilterStrList);
+      ItemIndex := 0;
+      OnChange := @SwitchUpdateBtn;
+      Parent := FPanel;
     end;
-    if Length(FilterPanels) <> 2 then
-      FilterRemove[High(FilterRemove)-1].Visible := False;
-  end else begin
-    FilterType := TComboBox.Create(nil);
-    with FilterType do begin
+
+    FSignsList := TComboBox.Create(nil);
+    with FSignsList do begin
       Width := 50;
       Height := 23;
       Top := 8;
-      Left := 450;
+      Left := 160;
       ReadOnly := True;
-      Items.AddStrings(['AND', 'OR']);
+      Items.AddStrings(['>', '<', '=', '>=', '<=', '<>']);
       ItemIndex := 0;
       OnChange := @SwitchUpdateBtn;
-      Parent := FilterPanels[High(FilterPanels)];
+      Parent := FPanel;
+    end;
+
+    FConstraint := TEdit.Create(nil);
+    with FConstraint do begin
+      Width := 220;
+      Height := 23;
+      Top := 8;
+      Left := 220;
+      OnChange := @SwitchUpdateBtn;
+      Parent := FPanel;
+    end;
+
+    if Length(FilterPanels) <> 1 then begin
+      FRemove := TButton.Create(nil);
+      with FRemove do begin
+        Width := 23;
+        Height := 23;
+        Top := 8;
+        Left := 462;
+        Caption := '-';
+        OnClick := @RemoveFilter;
+        Parent := FPanel;
+      end;
+      if Length(FilterPanels) <> 2 then
+        FilterPanels[High(FilterPanels)-1].FRemove.Visible := False;
+    end else begin
+      Self.FilterType := TComboBox.Create(nil);
+      with Self.FilterType do begin
+        Width := 50;
+        Height := 23;
+        Top := 8;
+        Left := 450;
+        ReadOnly := True;
+        Items.AddStrings(['AND', 'OR']);
+        ItemIndex := 0;
+        OnChange := @SwitchUpdateBtn;
+        Parent := FPanel;
+      end;
     end;
   end;
 
@@ -197,6 +214,7 @@ var
   M: TMeta;
 begin
   ThisTable := ATable;
+  SortIndex := -1;
   SetLength(SortStatus, Length(ATable.FFields));
   ReferenForm := TReferenForm.Create(nil);
   ShowTable(ATable, DBGrid, M.MakeQuery(ATable));
@@ -210,53 +228,89 @@ begin
   Show;
 end;
 
-procedure TReferenForm.FormResize(Sender: TObject);
-begin
-  with DBGrid do begin
-    Width := Self.Width;
-    Height := Self.Height - 80;
-  end;
-end;
+//procedure TReferenForm.FormResize(Sender: TObject);
+//begin
+//  with DBGrid do begin
+//    Width := Self.Width;
+//    Height := Self.Height - 80;
+//  end;
+//end;
 
-procedure TReferenForm.FilterSubmitClick(Sender: TObject);
+function TReferenForm.MakeLocalQuery(): String;
 var
-  i, FiltersEnabled, counter: Integer;
-  query, field, ftype, ending, beginning: String;
+  i, counter: Integer;
+  query, field, ftype: String;
   M: TMeta;
 begin
-  for i := 0 to High(FilterPanels) do inc(FiltersEnabled);
-  counter := -1;
+  counter := 0;
+  query := '';
   for i := 0 to High(FilterPanels) do begin
-    if not(FilterCheckBoxes[i].Checked) then Continue;
+    with FilterPanels[i] do begin
+      if not FCheckBox.Checked then Continue;
+      field := '';
+      ftype := '';
+      with ThisTable.FFields[FFieldsList.ItemIndex] do begin
+        if FForeignKeyTable <> '' then
+          field := FForeignKeyTable + '.Name'
+        else
+          field := FName;
+      end;
+      if counter <> 0 then
+        ftype := FilterType.Text;
+      query += Format(' %s %s %s :FConst_Text%d', [ftype, field, FSignsList.Text, i]);
+    end;
     inc(counter);
-    field := '';
-    ftype := '';
-    beginning := '';
-    ending := '';
-    with ThisTable.FFields[FilterFieldsLists[i].ItemIndex] do begin
+  end;
+  if counter > 0 then
+    query := 'WHERE ' + query;
+
+  if SortIndex <> -1 then begin;
+    with ThisTable.FFields[SortIndex] do begin
       if FForeignKeyTable <> '' then
         field := FForeignKeyTable + '.Name'
       else
         field := FName;
     end;
-    if counter <> 0 then
-      ftype := FilterType.Text;
-    if FiltersEnabled <> 1 then begin
-      beginning := '(';
-      ending := ')';
-    end;
-    query += ftype + beginning + field + FilterSignsLists[i].Text + chr(39) + FilterConstraints[i].Text + chr(39) + ending;
+    query += Format(' ORDER BY %s %s', [field, SortType]);
   end;
-  if counter >= 0 then begin
-    query := 'WHERE ' + query;
-    ShowTable(ThisTable, DBGrid, M.MakeQuery(ThisTable, query));
-    ThisQuery := query;
-  end else begin
-    ShowTable(ThisTable, DBGrid, M.MakeQuery(ThisTable, ''));
-    ThisQuery := '';
-  end;
+  Result := query;
+end;
+
+procedure TReferenForm.FilterSubmitClick(Sender: TObject);
+var
+  M: TMeta;
+begin
+  ShowTable(ThisTable, DBGrid, M.MakeQuery(ThisTable, MakeLocalQuery));
   FilterSubmit.Enabled := False;
 end;
+
+procedure TReferenForm.DBGridTitleClick(Column: TColumn);
+var
+  M: TMeta;
+begin
+  if SortIndex <> Column.Index then
+    SortStatus[SortIndex] := NONE;
+  SortIndex := Column.Index;
+  case SortStatus[SortIndex] of
+    NONE: begin
+      SortStatus[SortIndex] := DESC;
+      SortType := 'ASC';
+      SortIcon := '»';
+    end;
+    DESC: begin
+      SortStatus[SortIndex] := ASC;
+      SortType := 'DESC';
+      SortIcon := '«';
+    end;
+    ASC: begin
+      SortStatus[SortIndex] := NONE;
+      SortType := '';
+      SortIndex := -1;
+      SortIcon := '';
+    end;
+  end;
+  ShowTable(ThisTable, DBGrid, M.MakeQuery(ThisTable, MakeLocalQuery));
+  end;
 
 procedure TReferenForm.BtnAddFilterClick(Sender: TObject);
 begin
@@ -264,36 +318,9 @@ begin
   SwitchUpdateBtn(Sender);
 end;
 
-procedure TReferenForm.DBGridTitleClick(Column: TColumn);
-var
-  field, query, sorttype: String;
-  M: TMeta;
-  pick: String;
-  index: Integer;
+procedure TReferenForm.BtnInsertClick(Sender: TObject);
 begin
-  index := Column.Index;
-  with ThisTable.FFields[index] do begin
-    if FForeignKeyTable <> '' then
-      field := FForeignKeyTable + '.Name'
-    else
-      field := FName;
-  end;
-  sorttype := '';
-  case SortStatus[index] of
-    0, 2: begin
-      SortStatus[index] := 1;
-      sorttype := 'DESC';
-      pick := '«';
-    end;
-    1: begin
-      SortStatus[index] := 2;
-      sorttype := 'ASC';
-      pick := '»';
-    end;
-  end;
-  query := ThisQuery + ' ORDER BY ' + field + ' ' + sorttype;
-  ShowTable(ThisTable, DBGrid, M.MakeQuery(ThisTable, query));
-  DBGrid.Columns[index].Title.Caption := ThisTable.FFields[index].FCaption + ' ' + pick;
+  InsFrm.PopUpForm(ThisTable);
 end;
 
 
