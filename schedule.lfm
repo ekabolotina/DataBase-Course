@@ -1,0 +1,85 @@
+object FormSchedule: TFormSchedule
+  Left = 594
+  Height = 397
+  Top = 100
+  Width = 742
+  Caption = 'Срезы расписания'
+  ClientHeight = 397
+  ClientWidth = 742
+  OnShow = FormShow
+  Position = poScreenCenter
+  LCLVersion = '1.0.12.0'
+  object GroupBox: TGroupBox
+    Left = 9
+    Height = 72
+    Top = 8
+    Width = 720
+    Caption = 'Срезы'
+    ClientHeight = 54
+    ClientWidth = 716
+    TabOrder = 0
+    object LabelH: TLabel
+      Left = 13
+      Height = 16
+      Top = 16
+      Width = 93
+      Caption = 'По горизонтали:'
+      ParentColor = False
+    end
+    object ComboBoxH: TComboBox
+      Left = 125
+      Height = 23
+      Top = 13
+      Width = 140
+      ItemHeight = 15
+      Style = csDropDownList
+      TabOrder = 0
+    end
+    object LabelV: TLabel
+      Left = 301
+      Height = 16
+      Top = 16
+      Width = 80
+      Caption = 'По вертикали:'
+      ParentColor = False
+    end
+    object ComboBoxV: TComboBox
+      Left = 413
+      Height = 23
+      Top = 13
+      Width = 140
+      ItemHeight = 15
+      Style = csDropDownList
+      TabOrder = 1
+    end
+    object BtnSubmit: TButton
+      Left = 573
+      Height = 23
+      Top = 13
+      Width = 53
+      Caption = 'Ок'
+      OnClick = BtnSubmitClick
+      TabOrder = 2
+    end
+  end
+  object StringGrid: TStringGrid
+    Left = 10
+    Height = 296
+    Top = 88
+    Width = 719
+    TabOrder = 1
+  end
+  object ScheduleSQLQuery: TSQLQuery
+    FieldDefs = <>
+    Database = ConnectModule.IBConnection
+    Transaction = ConnectModule.SQLTransaction
+    Params = <>
+    left = 584
+    top = 256
+  end
+  object ScheduleDatasource: TDatasource
+    DataSet = ScheduleSQLQuery
+    left = 648
+    top = 256
+  end
+end
