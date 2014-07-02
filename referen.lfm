@@ -1,27 +1,31 @@
 object ReferenForm: TReferenForm
   Left = 459
-  Height = 409
+  Height = 410
   Top = 201
   Width = 885
   Align = alClient
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'ReferenForm'
-  ClientHeight = 409
+  ClientHeight = 410
   ClientWidth = 885
-  Constraints.MinHeight = 320
-  Constraints.MinWidth = 650
+  Constraints.MinHeight = 410
+  Constraints.MinWidth = 885
   ParentFont = True
   PopupMode = pmAuto
   Position = poScreenCenter
   LCLVersion = '1.0.12.0'
   object DBGrid: TDBGrid
-    Left = 0
-    Height = 320
+    Left = 5
+    Height = 316
     Top = 89
-    Width = 650
+    Width = 875
+    Align = alBottom
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Left = 5
+    BorderSpacing.Right = 5
+    BorderSpacing.Bottom = 5
     Color = clWindow
     Columns = <>
-    Constraints.MinHeight = 320
     Constraints.MinWidth = 650
     DataSource = Datasource
     Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit]
@@ -34,18 +38,21 @@ object ReferenForm: TReferenForm
     OnTitleClick = DBGridTitleClick
   end
   object FilterGroup: TGroupBox
-    Left = 8
-    Height = 100
-    Top = 8
-    Width = 634
+    Left = 10
+    Height = 72
+    Top = 10
+    Width = 865
+    Align = alTop
+    BorderSpacing.Around = 10
     Caption = 'Фильтр'
-    ClientHeight = 82
-    ClientWidth = 630
+    ClientHeight = 54
+    ClientWidth = 861
     TabOrder = 1
+    OnClick = FilterGroupClick
     object BtnAddFilter: TButton
       Left = 530
       Height = 23
-      Top = 8
+      Top = 6
       Width = 23
       Caption = '+'
       OnClick = BtnAddFilterClick
@@ -54,7 +61,7 @@ object ReferenForm: TReferenForm
     object FilterSubmit: TButton
       Left = 560
       Height = 23
-      Top = 8
+      Top = 6
       Width = 64
       Caption = 'Обновить'
       OnClick = FilterSubmitClick
@@ -64,7 +71,7 @@ object ReferenForm: TReferenForm
   object BtnInsert: TButton
     Left = 664
     Height = 23
-    Top = 16
+    Top = 32
     Width = 59
     Caption = 'Вставить'
     OnClick = BtnInsertClick
@@ -73,7 +80,7 @@ object ReferenForm: TReferenForm
   object BtnEdit: TButton
     Left = 736
     Height = 23
-    Top = 16
+    Top = 32
     Width = 59
     Caption = 'Править'
     OnClick = BtnEditClick
@@ -82,20 +89,11 @@ object ReferenForm: TReferenForm
   object BtnRemove: TButton
     Left = 808
     Height = 23
-    Top = 16
+    Top = 32
     Width = 59
     Caption = 'Удалить'
     OnClick = BtnRemoveClick
     TabOrder = 4
-  end
-  object BtnReport: TButton
-    Left = 664
-    Height = 28
-    Top = 59
-    Width = 203
-    Caption = 'Срезы расписания'
-    OnClick = BtnReportClick
-    TabOrder = 5
   end
   object SQLQuery: TSQLQuery
     FieldDefs = <>

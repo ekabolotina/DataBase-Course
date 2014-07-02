@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, sqldb, db, BufDataset, FileUtil, Forms, Controls, Graphics,
   Dialogs, DBGrids, StdCtrls, ExtCtrls, DbCtrls, Connect, MetaUnit, CardInsert,
-  CardEdit, Schedule;
+  CardEdit;
 
 type
 
@@ -32,7 +32,6 @@ type
     BtnInsert: TButton;
     BtnEdit: TButton;
     BtnRemove: TButton;
-    BtnReport: TButton;
     FilterSubmit: TButton;
     Datasource: TDatasource;
     DBGrid: TDBGrid;
@@ -42,8 +41,8 @@ type
     procedure BtnEditClick(Sender: TObject);
     procedure BtnInsertClick(Sender: TObject);
     procedure BtnRemoveClick(Sender: TObject);
-    procedure BtnReportClick(Sender: TObject);
     procedure DBGridTitleClick(Column: TColumn);
+    procedure FilterGroupClick(Sender: TObject);
     procedure FilterSubmitClick(Sender: TObject);
     procedure PopupForm(ATable: TTableInfo);
     procedure ShowTable;
@@ -331,6 +330,11 @@ begin
   ShowTable;
   end;
 
+procedure TReferenForm.FilterGroupClick(Sender: TObject);
+begin
+
+end;
+
 procedure TReferenForm.BtnAddFilterClick(Sender: TObject);
 begin
   MkPnl();
@@ -388,12 +392,6 @@ begin
     ShowTable;
   end;
 end;
-
-procedure TReferenForm.BtnReportClick(Sender: TObject);
-begin
-  FormSchedule.PopUpForm;
-end;
-
 
 {$R *.lfm}
 
