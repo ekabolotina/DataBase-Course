@@ -18,8 +18,8 @@ type
     SQLQr: TSQLQuery;
   end;
 
-  TProcedure = procedure of Object;
-  TParamProcedure = procedure(AID: Integer) of Object;
+  TRefreshTableProc = procedure of Object;
+  TClearTrashProc = procedure(AID: Integer) of Object;
 
   { TCardEditForm }
 
@@ -35,14 +35,15 @@ type
   public
     CurrentTbl: TTableInfo;
     CurrentID: Integer;
+    CurrentisEditorEnabled: Boolean;
     CurrentFieldsVals: array of String;
     EditPanels: array of TEditPanel;
     CurrentIDs: array of Integer;
-    CallBRefreshTbl: TProcedure;
-    CallBClearTrash: TParamProcedure;
-    procedure PopUpForm(
-      ATable: TTableInfo; AID: Integer; AFieldsVals: array of String;
-      ACallB: TProcedure; AClear: TParamProcedure);
+    RefreshTableProc: TRefreshTableProc;
+    ClearTrashProc: TClearTrashProc;
+    procedure PopUpForm(ATable: TTableInfo; AID: Integer;
+      AFieldsVals: array of String; isEditorEnabled: Boolean;
+      ARefreshTableProc: TRefreshTableProc; AClearTrashProc: TClearTrashProc);
     procedure BuildEditor;
     procedure CollectIDs;
     procedure BtnSaveEnDis(Sender: TObject);
@@ -53,7 +54,8 @@ implementation
 
 procedure TCardEditForm.BtnCancelClick(Sender: TObject);
 begin
-  CallBClearTrash(CurrentID);
+  if CurrentisEditorEnabled then
+    ClearTrashProc(CurrentID);
   Close;
 end;
 
@@ -67,10 +69,17 @@ var
   i: Integer;
   values: String;
 begin
-  for i := 1 to High(CurrentTbl.FFields) do
-    values += Format(',%s = :Val%d', [CurrentTbl.FFields[i].FName, i]);
-  delete(values, 1, 1);
-  Result := Format('UPDATE %s SET %s WHERE ID = %d', [CurrentTbl.FName, values, CurrentID]);
+  if CurrentisEditorEnabled then begin
+    for i := 1 to High(CurrentTbl.FFields) do
+      values += Format(',%s = :Val%d', [CurrentTbl.FFields[i].FName, i]);
+    delete(values, 1, 1);
+    Result := Format('UPDATE %s SET %s WHERE ID = %d', [CurrentTbl.FName, values, CurrentID]);
+  end else begin
+    for i := 1 to High(CurrentTbl.FFields) do
+       values += Format(',:Val%d', [i]);
+    delete(values, 1, 1);
+    Result := Format('INSERT INTO %s VALUES(NEXT VALUE FOR %s,%s)', [CurrentTbl.FName, CurrentTbl.FSequence, values]);
+  end;
 end;
 
 procedure TCardEditForm.CollectIDs;
@@ -137,7 +146,7 @@ begin
         Height := 23;
         Top := preTop;
         Left := 140;
-        KeyValue := CurrentIDs[i];
+        if CurrentisEditorEnabled then KeyValue := CurrentIDs[i];
         Style := csDropDownList;
         Parent := CardEditGroupBox;
         OnChange := @BtnSaveEnDis;
@@ -154,7 +163,7 @@ begin
         if i = 0 then begin
           Enabled := False;
           Text := IntToStr(CurrentID);
-        end else
+        end else if CurrentisEditorEnabled then
           Text := CurrentFieldsVals[i];
       end;
     end;
@@ -167,9 +176,6 @@ var
   i: Integer;
   empty: Boolean;
 begin
-  //CardEditSQLQuery.Edit;
-  //CardEditSQLQuery.Post;
-  //CardEditSQLQuery.ApplyUpdates;
   with CardEditSQLQuery do begin
     Close;
     SQL.Clear;
@@ -194,18 +200,18 @@ begin
       ExecSQL;
       ConnectModule.SQLTransaction.Commit;
       BtnSave.Enabled := False;
-      CallBRefreshTbl;
+      RefreshTableProc;
     end;
   end;
 end;
 
-procedure TCardEditForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+procedure TCardEditForm.FormClose(Sender: TObject; var CloseAction: TCloseAction
+  );
 begin
-  CallBClearTrash(CurrentID);
+  ClearTrashProc(CurrentID);
 end;
 
-procedure TCardEditForm.PopUpForm(ATable: TTableInfo; AID: Integer;
-  AFieldsVals: array of String; ACallB: TProcedure; AClear: TParamProcedure);
+procedure TCardEditForm.PopUpForm(ATable: TTableInfo; AID: Integer; AFieldsVals: array of String; isEditorEnabled: Boolean; ARefreshTableProc: TRefreshTableProc; AClearTrashProc: TClearTrashProc);
 var
   i: Integer;
 begin
@@ -213,13 +219,15 @@ begin
   Caption := 'Редактирование записи';
   CurrentTbl := ATable;
   CurrentID := AID;
-  CallBRefreshTbl := ACallB;
-  CallBClearTrash := AClear;
-  SetLength(CurrentFieldsVals, Length(AFieldsVals));
-  for i := 1 to High(AFieldsVals) do
-    CurrentFieldsVals[i] := AFieldsVals[i];
+  CurrentisEditorEnabled := isEditorEnabled;
+  RefreshTableProc := ARefreshTableProc;
+  ClearTrashProc := AClearTrashProc;
+  if isEditorEnabled then begin
+    SetLength(CurrentFieldsVals, Length(AFieldsVals));
+    for i := 1 to High(AFieldsVals) do
+      CurrentFieldsVals[i] := AFieldsVals[i];
+  end;
   BuildEditor;
-  BtnSave.Enabled := False;
 end;
 
 {$R *.lfm}
