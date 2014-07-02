@@ -21,16 +21,16 @@ type
 
   TTableInfo = class
   public
-    FName, FCaption: String;
+    FName, FCaption, FSequence: String;
     FFields: array of TFieldInfo;
-    constructor Create(AName, ACaption: String; AFields: array of TFieldInfo);
+    constructor Create(AName, ACaption, ASequence: String; AFields: array of TFieldInfo);
   end;
 
   TMeta = class
   public
-    procedure AddTable(AName, ACaption: String; AFields: array of TFieldInfo);
+    procedure AddTable(AName, ACaption, ASequence: String; AFields: array of TFieldInfo);
     procedure AddTable(ATable: TTableInfo);
-    function MakeQuery(ATable: TTableInfo; AConstrains: string = ''): String;
+    class function MakeQuery(ATable: TTableInfo; AConstrains: string = ''): String;
   end;
 
 function MkFld(AName, ACaption: String; AWidth: Integer;
@@ -61,18 +61,19 @@ begin
   FForeignKeyRow := AForeignKeyRow;
 end;
 
-constructor TTableInfo.Create(AName, ACaption: String; AFields: array of TFieldInfo);
+constructor TTableInfo.Create(AName, ACaption, ASequence: String; AFields: array of TFieldInfo);
 var
   i: Integer;
 begin
   FName := AName;
   FCaption := ACaption;
+  FSequence := ASequence;
   SetLength(FFields, Length(AFields));
   for i := 0 to High(AFields) do
     FFields[i] := AFields[i];
 end;
 
-function TMeta.MakeQuery(ATable: TTableInfo; AConstrains: string = ''): String;
+class function TMeta.MakeQuery(ATable: TTableInfo; AConstrains: string = ''): String;
 var
   rows, innerjoins, consraints: String;
   i: Integer;
@@ -82,21 +83,21 @@ begin
   for i := 0 to High(ATable.FFields) do
     with ATable.FFields[i] do
       if FForeignKeyTable <> '' then begin
-        rows += ', ' + FForeignKeyTable + '.Name';
-        innerjoins += 'INNER JOIN ' + FForeignKeyTable + ' ON ' + ATable.FName + '.' + FName + ' = ' + FForeignKeyTable + '.' + FForeignKeyRow + ' ';
+        rows += Format(', %s.Name', [FForeignKeyTable]);
+        innerjoins += Format('INNER JOIN %s ON %s.%s = %s.%s ', [FForeignKeyTable, ATable.FName, FName, FForeignKeyTable, FForeignKeyRow]);
       end else
-        rows += ', ' + ATable.FFields[i].FName;
+        rows += Format(', %s.%s', [ATable.FName, ATable.FFields[i].FName]);
   Delete(rows, 1, 1);
   if AConstrains <> '' then
-    consraints := ' ' + AConstrains
+    consraints := Format(' %s', [AConstrains])
   else
     consraints := '';
-  Result := 'SELECT ' + rows + ' FROM ' + ATable.FName + ' ' + innerjoins + consraints;
+  Result := Format('SELECT %s FROM %s %s %s', [rows, ATable.FName, innerjoins, consraints]);
 end;
 
-procedure TMeta.AddTable(AName, ACaption: String; AFields: array of TFieldInfo);
+procedure TMeta.AddTable(AName, ACaption, ASequence: String; AFields: array of TFieldInfo);
 begin
-  AddTable(TTableInfo.Create(AName, ACaption, AFields));
+  AddTable(TTableInfo.Create(AName, ACaption, ASequence, AFields));
 end;
 
 procedure TMeta.AddTable(ATable: TTableInfo);
