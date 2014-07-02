@@ -41,7 +41,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="7">
+    <Units Count="8">
       <Unit0>
         <Filename Value="SQLAdmin.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -92,6 +92,11 @@
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Schedule"/>
       </Unit6>
+      <Unit7>
+        <Filename Value="filters.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Filters"/>
+      </Unit7>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
