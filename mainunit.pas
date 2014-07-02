@@ -25,13 +25,10 @@ type
     procedure MenuHelp_AboutClick(Sender: TObject);
     procedure MenuTable_Show(Sender: TObject);
     procedure MakeUpTableList();
-  private
-    { private declarations }
   public
     MenuItems: array of TMenuItem;
     AT: TMeta;
     b: TButton;
-    { public declarations }
   end;
 
 var
@@ -62,49 +59,49 @@ end;
 
 procedure TMainForm.FormShow(Sender: TObject);
 begin
-  AT.AddTable('Subjects', 'Предметы', 'Subject_ID', [
+  AT.AddTable('Subjects', 'Предметы', 'Subject_ID', 'Name', [
     MkFld('ID', 'Идентификатор', 5),
     MkFld('name', 'Название', 20)
   ]);
-  AT.AddTable('Subject_Types', 'Виды занятий', 'Type_ID', [
+  AT.AddTable('Subject_Types', 'Виды занятий', 'Type_ID',  'Name', [
     MkFld('ID', 'Идентификатор', 5),
     MkFld('name', 'Вид', 10)
     ]);
-  AT.AddTable('Professors', 'Преподаватели', 'Professor_ID', [
+  AT.AddTable('Professors', 'Преподаватели', 'Professor_ID',  'Name', [
     MkFld('ID', 'Идентификатор', 5),
     MkFld('name', 'ФИО', 15)
     ]);
-  AT.AddTable('Times', 'Пары', 'Time_ID',[
+  AT.AddTable('Times', 'Пары', 'Time_ID', 'Name', [
     MkFld('ID', 'Идентификатор', 5),
     MkFld('Name', 'Название', 5),
     MkFld('"Begin"', 'Начало', 10),
     MkFld('"End"', 'Окончание', 5)
   ]);
-  AT.AddTable('Days', 'Дни', 'Day_Index', [
+  AT.AddTable('Days', 'Дни', 'Day_Index',  'ID', [
     MkFld('ID', 'Идентификатор', 5),
     MkFld('name', 'День', 15)
     ]);
-  AT.AddTable('Groups', 'Группы', 'Group_ID', [
+  AT.AddTable('Groups', 'Группы', 'Group_ID',  'Name', [
     MkFld('ID', 'Идентификатор', 5),
     MkFld('name', 'Номер', 7),
     MkFld('Group_Size', 'Размер', 5)
   ]);
-  AT.AddTable('Rooms', 'Аудитории', 'Room_ID', [
+  AT.AddTable('Rooms', 'Аудитории', 'Room_ID',  'Name', [
     MkFld('ID', 'Идентификатор', 5),
     MkFld('name', 'Номер', 15),
     MkFld('"Size"', 'Вместимость', 10)
   ]);
-  AT.AddTable('Professors_Subjects', 'Преподаватели - предметы', 'PS_ID', [
+  AT.AddTable('Professors_Subjects', 'Преподаватели - предметы', 'PS_ID',  'ID', [
     MkFld('ID', 'Идентификатор', 5),
     MkFld('Professor_ID', 'Преподаватель', 10,'Professors', 'ID'),
     MkFld('Subject_ID', 'Предмет', 10,'Subjects', 'ID')
   ]);
-  AT.AddTable('Subjects_Groups', 'Предметы - группы', 'SG_ID', [
+  AT.AddTable('Subjects_Groups', 'Предметы - группы', 'SG_ID',  'ID', [
     MkFld('ID', 'Идентификатор', 5),
     MkFld('Subject_ID', 'Предмет', 15, 'Subjects', 'ID'),
     MkFld('Group_ID', 'Группа', 15, 'Groups', 'ID')
   ]);
-  AT.AddTable('Schedule_Items', 'Расписание', 'Item_ID', [
+  AT.AddTable('Schedule_Items', 'Расписание', 'Item_ID',  'ID', [
     MkFld('ID', 'Идентификатор', 5),
     MkFld('Subject_ID', 'Предмет', 20, 'Subjects', 'ID'),
     MkFld('Subject_Type_ID', 'Вид занятия', 3, 'Subject_Types', 'ID'),
