@@ -6,19 +6,21 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
-  Connect, Referen, MetaUnit, StdCtrls;
+  Connect, Referen, MetaUnit, StdCtrls, Schedule;
 
 type
 
   { TMainForm }
 
   TMainForm = class(TForm)
+    BtnReport: TButton;
     MainMenu: TMainMenu;
     MenuFile: TMenuItem;
     MenuHelp: TMenuItem;
     MenuReferen: TMenuItem;
     MenuFile_Exit: TMenuItem;
     MenuHelp_About: TMenuItem;
+    procedure BtnReportClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure MenuFile_ExitClick(Sender: TObject);
@@ -117,6 +119,11 @@ end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
+end;
+
+procedure TMainForm.BtnReportClick(Sender: TObject);
+begin
+  FormSchedule.PopUpForm;
 end;
 
 procedure TMainForm.MenuTable_Show(Sender: TObject);
