@@ -136,17 +136,27 @@ begin
   end;
 
 procedure TReferenForm.BtnInsertClick(Sender: TObject);
+var
+  tmpArr: array of Integer;
+  i: Integer;
 begin
-  TCardEditForm.ShowEditor(ThisTable, 0, False, @ShowTable);
+  SetLength(tmpArr, Length(ThisTable.FFields));
+  for i := 0 to High(tmpArr) do
+    tmpArr[i] := -1;
+  TCardEditForm.ShowEditor(ThisTable, 0, False, @ShowTable, tmpArr);
 end;
 
 procedure TReferenForm.BtnEditClick(Sender: TObject);
 var
   forEdit, i: Integer;
+  tmpArr: array of Integer;
 begin
+  SetLength(tmpArr, Length(ThisTable.FFields));
+  for i := 0 to High(tmpArr) do
+    tmpArr[i] := -1;
   forEdit := Datasource.DataSet.FieldByName('ID').AsInteger;
   if forEdit = 0 then Exit;
-  TCardEditForm.ShowEditor(ThisTable, forEdit, True, @ShowTable);
+  TCardEditForm.ShowEditor(ThisTable, forEdit, True, @ShowTable, tmpArr);
 end;
 
 procedure TReferenForm.BtnRemoveClick(Sender: TObject);
