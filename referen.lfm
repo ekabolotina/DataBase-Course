@@ -5,8 +5,8 @@ object ReferenForm: TReferenForm
   Width = 1230
   Align = alClient
   Caption = 'ReferenForm'
-  ClientHeight = 453
-  ClientWidth = 1230
+  ClientHeight = 0
+  ClientWidth = 0
   Constraints.MinHeight = 410
   Constraints.MinWidth = 1230
   ParentFont = True

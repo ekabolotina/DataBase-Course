@@ -28,7 +28,8 @@ type
     procedure BtnInsertClick(Sender: TObject);
     procedure BtnRemoveClick(Sender: TObject);
     procedure DBGridTitleClick(Column: TColumn);
-    procedure PopupForm(ATable: TTableInfo; AFilterInfo: TFilterInfoArray = nil);
+    procedure PopupForm(ATable: TTableInfo; AFilterType: Integer = 0;
+      AFilterInfo: TFilterInfoArray = nil);
     procedure ShowTable;
   public
     ThisTable: TTableInfo;
@@ -73,7 +74,8 @@ begin
   //DBGrid.Columns[0].Visible := False;
 end;
 
-procedure TReferenForm.PopupForm(ATable: TTableInfo; AFilterInfo: TFilterInfoArray);
+procedure TReferenForm.PopupForm(ATable: TTableInfo; AFilterType: Integer = 0;
+      AFilterInfo: TFilterInfoArray = nil);
 var
   i: Integer;
 begin
@@ -84,7 +86,7 @@ begin
   ReferenForm := TReferenForm.Create(nil);
   Caption := ATable.FCaption;
   DBGrid.Top := 40;
-  F := TFilters.Create(ThisTable, FilterGroup, @ShowTable, 10, AFilterInfo);
+  F := TFilters.Create(ThisTable, FilterGroup, @ShowTable, 10, AFilterType, AFilterInfo);
   ShowTable;
   Show;
 end;
