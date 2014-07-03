@@ -8,7 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, MainUnit, Connect, Referen, MetaUnit, CardEdit, Schedule, Filters,
-  ConflictsTree, ConflictsMeta;
+  ConflictsTree, ConflictsMeta, ExportUnit;
 
 {$R *.res}
 

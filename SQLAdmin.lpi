@@ -41,7 +41,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="10">
+    <Units Count="11">
       <Unit0>
         <Filename Value="SQLAdmin.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -113,6 +113,11 @@
         <ResourceBaseClass Value="DataModule"/>
         <UnitName Value="ConflictsMeta"/>
       </Unit9>
+      <Unit10>
+        <Filename Value="exportunit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ExportUnit"/>
+      </Unit10>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
