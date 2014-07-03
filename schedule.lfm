@@ -1,7 +1,7 @@
 object FormSchedule: TFormSchedule
-  Left = 552
+  Left = 376
   Height = 600
-  Top = 58
+  Top = 65
   Width = 1292
   Caption = 'Срезы расписания'
   ClientHeight = 600
@@ -12,8 +12,10 @@ object FormSchedule: TFormSchedule
   Position = poScreenCenter
   LCLVersion = '1.0.12.0'
   object CutGroupBox: TGroupBox
-    AnchorSideLeft.Control = StringGrid
+    AnchorSideLeft.Control = DrawGrid
     AnchorSideLeft.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = FilterGroupBox
     Left = 669
     Height = 145
@@ -26,6 +28,7 @@ object FormSchedule: TFormSchedule
     ClientHeight = 127
     ClientWidth = 614
     Constraints.MaxHeight = 145
+    Constraints.MaxWidth = 618
     TabOrder = 0
     object LabelH: TLabel
       Left = 13
@@ -41,6 +44,7 @@ object FormSchedule: TFormSchedule
       Top = 13
       Width = 140
       ItemHeight = 15
+      OnChange = UpdateGridOnClick
       Style = csDropDownList
       TabOrder = 0
     end
@@ -58,21 +62,13 @@ object FormSchedule: TFormSchedule
       Top = 60
       Width = 140
       ItemHeight = 15
+      OnChange = UpdateGridOnClick
       Style = csDropDownList
       TabOrder = 1
     end
-    object BtnSubmit: TButton
-      Left = 108
-      Height = 23
-      Top = 95
-      Width = 77
-      Caption = 'Ок'
-      OnClick = BtnSubmitClick
-      TabOrder = 2
-    end
     object CheckGroup: TCheckGroup
       Left = 302
-      Height = 108
+      Height = 117
       Top = -2
       Width = 304
       AutoFill = True
@@ -86,8 +82,7 @@ object FormSchedule: TFormSchedule
       ChildSizing.Layout = cclLeftToRightThenTopToBottom
       ChildSizing.ControlsPerLine = 2
       Columns = 2
-      OnItemClick = CheckGroupItemClick
-      TabOrder = 3
+      TabOrder = 2
     end
     object BtnSwitch: TSpeedButton
       Left = 268
@@ -135,38 +130,71 @@ object FormSchedule: TFormSchedule
       OnClick = BtnSwitchClick
       ShowCaption = False
     end
+    object CheckBoxShowTitles: TCheckBox
+      Left = 13
+      Height = 19
+      Top = 99
+      Width = 215
+      Caption = 'Показать названия полей в ячейках'
+      Checked = True
+      OnChange = UpdateGridOnClick
+      OnClick = UpdateGridOnClick
+      State = cbChecked
+      TabOrder = 3
+    end
   end
-  object StringGrid: TStringGrid
+  object FilterGroupBox: TGroupBox
+    Left = 669
+    Height = 440
+    Top = 152
+    Width = 618
+    BorderSpacing.Top = 200
+    Caption = 'Фильтры'
+    ClientHeight = 422
+    ClientWidth = 614
+    Constraints.MaxHeight = 440
+    Constraints.MaxWidth = 618
+    TabOrder = 1
+    object ScrollBox: TScrollBox
+      AnchorSideLeft.Control = FilterGroupBox
+      AnchorSideTop.Control = FilterGroupBox
+      AnchorSideRight.Control = FilterGroupBox
+      AnchorSideRight.Side = asrBottom
+      AnchorSideBottom.Control = FilterGroupBox
+      AnchorSideBottom.Side = asrBottom
+      Left = 0
+      Height = 422
+      Top = 0
+      Width = 614
+      HorzScrollBar.Page = 614
+      VertScrollBar.Page = 422
+      Align = alLeft
+      Anchors = [akTop, akLeft, akRight, akBottom]
+      BorderStyle = bsNone
+      TabOrder = 0
+    end
+  end
+  object DrawGrid: TDrawGrid
+    AnchorSideRight.Control = CutGroupBox
     Left = 5
-    Height = 590
+    Height = 587
     Top = 5
     Width = 659
     Align = alLeft
     Anchors = [akTop, akLeft, akRight, akBottom]
     AutoEdit = False
+    BorderSpacing.Bottom = 3
     BorderSpacing.Around = 5
-    ColCount = 1
-    DefaultColWidth = 100
+    BorderSpacing.InnerBorder = 2
+    BorderSpacing.CellAlignHorizontal = ccaCenter
+    DefaultColWidth = 200
     DefaultDrawing = False
-    DefaultRowHeight = 100
-    MouseWheelOption = mwGrid
-    RowCount = 1
-    TabOrder = 1
-    TabStop = False
-  end
-  object FilterGroupBox: TGroupBox
-    AnchorSideLeft.Control = StringGrid
-    AnchorSideLeft.Side = asrBottom
-    AnchorSideTop.Control = CutGroupBox
-    AnchorSideTop.Side = asrBottom
-    Left = 669
-    Height = 440
-    Top = 152
-    Width = 618
-    Anchors = [akTop, akLeft, akRight, akBottom]
-    BorderSpacing.Top = 200
-    Caption = 'Фильтры'
+    DefaultRowHeight = 200
+    ExtendedSelect = False
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goSmoothScroll]
     TabOrder = 2
+    OnDrawCell = DrawGridDrawCell
+    OnMouseUp = DrawGridMouseUp
   end
   object ScheduleSQLQuery: TSQLQuery
     FieldDefs = <>

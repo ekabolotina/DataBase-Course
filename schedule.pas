@@ -6,16 +6,23 @@ interface
 
 uses
   Classes, SysUtils, sqldb, db, FileUtil, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, Grids, ExtCtrls, Buttons, MetaUnit, Connect, Filters, windows;
+  StdCtrls, Grids, ExtCtrls, Buttons, MetaUnit, Connect, Filters;
 
 type
 
-  THorV = (H, V);
+
 
   { TFormSchedule }
 
   TFormSchedule = class(TForm)
-    BtnSubmit: TButton;
+  const
+    CellSize = 200;
+  type
+    THorV = (H, V);
+    DinArr = array of String;
+  procedure DrawGridMouseUp(Sender: TObject; Button: TMouseButton;
+    Shift: TShiftState; X, Y: Integer);
+  published
     BtnSwitch: TSpeedButton;
     CheckGroup: TCheckGroup;
     ComboBoxH: TComboBox;
@@ -26,23 +33,28 @@ type
     LabelH: TLabel;
     LabelV: TLabel;
     ScheduleSQLQuery: TSQLQuery;
-    StringGrid: TStringGrid;
-    procedure BtnSubmitClick(Sender: TObject);
+    DrawGrid: TDrawGrid;
+    CheckBoxShowTitles: TCheckBox;
+    ScrollBox: TScrollBox;
+    procedure UpdateGridOnClick(Sender: TObject);
     procedure BtnSwitchClick(Sender: TObject);
-    procedure CheckGroupItemClick(Sender: TObject; Index: integer);
     procedure FormShow(Sender: TObject);
+    procedure DrawGridDrawCell(Sender: TObject; aCol, aRow: Integer;
+      aRect: TRect; aState: TGridDrawState);
   public
-    ScheduleTable: TTableInfo;
+    ScheduleTable, TableH, TableV: TTableInfo;
     TablesList: array of String;
     HVals, VVals: array of String;
     F: TFilters;
-    FillStatus: array of array of Boolean;
+    ScheduleItems: array of array of array of array of String;
     procedure PopUpForm;
-    procedure FillHeader(ATable: TTableInfo; HorV: THorV);
+    function FillHeader(ATable: TTableInfo; var Headers: DinArr): Integer;
     procedure FillItems(AFieldH, AFieldV: Integer);
-    procedure FillCheckBoxGroup;
+    procedure FillCheckBoxGroup(H, V: Integer);
+    procedure BuildCheckBoxGroup;
     procedure LoadGrid;
     procedure FillCell(X, Y: Integer);
+    function PointIntoRect(Point: TPoint; Rect: TRect): Boolean;
   end;
 
 var
@@ -50,7 +62,7 @@ var
 
 implementation
 
-procedure TFormSchedule.FillCheckBoxGroup;
+procedure TFormSchedule.BuildCheckBoxGroup;
 var
   i: Integer;
 begin
@@ -58,87 +70,150 @@ begin
     CheckGroup.Items.Add(ScheduleTable.FFields[i].FCaption);
     CheckGroup.Checked[i] := True;
   end;
+  CheckGroup.Checked[0] := False;
+end;
+
+procedure TFormSchedule.FillCheckBoxGroup(H, V: Integer);
+var
+  i: Integer;
+begin
+  for i := 0 to High(ScheduleTable.FFields) do begin
+    CheckGroup.Checked[i] := True;
+  end;
+  CheckGroup.Checked[0] := False;
+  CheckGroup.Checked[H] := False;
+  CheckGroup.Checked[V] := False;
 end;
 
 procedure TFormSchedule.FormShow(Sender: TObject);
 var i:integer;
 begin
-  for i := 0 to High(Tables) do begin
-    ComboBoxH.Items.Add(Tables[i].FCaption);
-    ComboBoxV.Items.Add(Tables[i].FCaption);
-  end;
+  for i := 0 to High(Tables) do
+    if Tables[i].FIsReferen then begin
+      ComboBoxH.Items.Add(Tables[i].FCaption);
+      ComboBoxV.Items.Add(Tables[i].FCaption);
+    end;
   ComboBoxH.ItemIndex := 0;
   ComboBoxV.ItemIndex := 0;
   ScheduleTable := TMeta.GetTableByName('Schedule_Items');
-  F := TFilters.Create(ScheduleTable, FilterGroupBox, @LoadGrid, 10);
+  F := TFilters.Create(ScheduleTable, ScrollBox, @LoadGrid, 100);
   F.MkPnl;
-  FillCheckBoxGroup;
+  BuildCheckBoxGroup;
   LoadGrid;
+end;
+
+procedure TFormSchedule.DrawGridDrawCell(Sender: TObject; aCol,
+  aRow: Integer; aRect: TRect; aState: TGridDrawState);
+var
+  TextStyle: TTextStyle;
+  i, j, marginX, marginY, insideMargin, outsideMargin: Integer;
+begin
+  TextStyle.Wordbreak := True;
+  TextStyle.SingleLine := True;
+
+  if (aRow = 0) or (aCol = 0) then
+    DrawGrid.Canvas.Brush.Color := $f2f2f2
+  else
+    DrawGrid.Canvas.Brush.Color := $ffffff;
+
+  DrawGrid.Canvas.Rectangle(aRect.Left-1, aRect.Top-1, aRect.Left + CellSize + 1, aRect.Top + CellSize + 1);
+
+  if (aRow = 0) and (aCol = 0) then begin
+    DrawGrid.Canvas.MoveTo(aRect.TopLeft);
+    DrawGrid.Canvas.LineTo(aRect.BottomRight);
+  end;
+
+  marginY := aRect.Top;
+  marginX := aRect.Left + (aRect.Right - aRect.Left - Canvas.TextHeight(HVals[aCol])) div 2;
+
+  if (aRow = 0) and (aCol <> 0) then begin
+    DrawGrid.Canvas.TextRect(aRect, marginX, marginY, HVals[aCol], TextStyle);
+    Exit;
+  end;
+  if (aRow <> 0) and (aCol = 0)  then begin
+    DrawGrid.Canvas.TextRect(aRect, marginX, marginY, VVals[aRow], TextStyle);
+    Exit;
+  end;
+
+  if Length(ScheduleItems[aCol, aRow]) = 0 then Exit;
+  insideMargin := 0;
+  outsideMargin := 0;
+  for i := 0 to High(ScheduleItems[aCol, aRow]) do begin
+    insideMargin := 0;
+    for j := 0 to High(ScheduleItems[aCol, aRow, i]) do begin
+      DrawGrid.Canvas.TextRect(Rect(aRect.Left + 4, aRect.Top, aRect.Right, aRect.Bottom), marginX, marginY + insideMargin + outsideMargin, ScheduleItems[aCol, aRow, i, j], TextStyle);
+      insideMargin += Canvas.TextHeight(ScheduleItems[aCol, aRow, i, j]);
+    end;
+    DrawGrid.Canvas.Brush.Color := $bbbbbb;
+    outsideMargin += Canvas.TextHeight(ScheduleItems[aCol, aRow, i, j]) * Length(ScheduleItems[aCol, aRow, i]);
+    DrawGrid.Canvas.Line(aRect.Left + 50, marginY + outsideMargin + 5, aRect.Right - 50, marginY + outsideMargin + 5);
+    outsideMargin += 8;
+  end;
+
+  if Length(ScheduleItems[aCol, aRow]) > 1 then begin
+    DrawGrid.Canvas.Brush.Color := $bbbbbb;
+    DrawGrid.Canvas.Polygon([aRect.BottomRight, Point(aRect.Right, aRect.Bottom-20), Point(aRect.Right-20, aRect.Bottom)]);
+  end;
+
 end;
 
 
 procedure TFormSchedule.FillCell(X, Y: Integer);
 var
-  i: Integer;
-  Rect: TRect;
-  s: String;
+  i, GridW, GridH, ItemsCount, StrCount: Integer;
 begin
-  if not FillStatus[X, Y] then begin
-    FillStatus[X, Y] := True;
-    Rect := StringGrid.CellRect(X, Y);
-    for i := 0 to High(ScheduleTable.FFields) do begin
-      s := StringGrid.Cells[X, Y] + ScheduleSQLQuery.Fields[i].AsString + ' ';
-      if CheckGroup.Checked[i] then
-        //DrawText(StringGrid.Canvas.Handle, PChar(Utf8ToAnsi(s)), length(s), Rect, DT_WORDBREAK);
-        StringGrid.Cells[X, Y] := s;
+  GridW := DrawGrid.ColCount;
+  GridH := DrawGrid.RowCount;
+  ItemsCount := Length(ScheduleItems[X, Y]);
+  SetLength(ScheduleItems[X, Y], ItemsCount + 1);
+
+  for i := 0 to High(ScheduleTable.FFields) do
+    if CheckGroup.Checked[i] then begin
+      StrCount := Length(ScheduleItems[X, Y, ItemsCount]);
+      SetLength(ScheduleItems[X, Y, ItemsCount], StrCount + 1);
+      if CheckBoxShowTitles.Checked then
+        ScheduleItems[X, Y, ItemsCount, StrCount] +=  Format('%s: %s',
+          [ScheduleTable.FFields[i].FCaption, ScheduleSQLQuery.Fields[i].AsString])
+      else
+        ScheduleItems[X, Y, ItemsCount, StrCount] +=  ScheduleSQLQuery.Fields[i].AsString
     end;
-  end;
+
 end;
 
-procedure TFormSchedule.FillHeader(ATable: TTableInfo; HorV: THorV);
+function TFormSchedule.FillHeader(ATable: TTableInfo; var Headers: DinArr): Integer;
 var
   i: Integer;
 begin
   i := 1;
+  SetLength(Headers, 1);
   with ScheduleSQLQuery do begin
     Close;
     SQL.Clear;
     SQL.Text := Format('SELECT Name FROM %s ORDER BY %s', [ATable.FName, ATable.FSortField]);
     Open;
     while not EOF do begin
-      if HorV = H then begin
-        StringGrid.ColCount := i+1;
-        SetLength(HVals, i+1);
-        StringGrid.Cells[i, 0] := FieldByName('Name').AsString;
-        HVals[i] := FieldByName('Name').AsString;
-      end else begin
-        StringGrid.RowCount := i+1;
-        SetLength(VVals, i+1);
-        StringGrid.Cells[0, i] := FieldByName('Name').AsString;
-        VVals[i] := FieldByName('Name').AsString;
-      end;
+      SetLength(Headers, Length(Headers)+1);
+      Headers[i] := FieldByName('Name').AsString;
       Inc(i);
       Next;
     end;
   end;
+  Result := i;
 end;
 
 procedure TFormSchedule.FillItems(AFieldH, AFieldV: Integer);
 var
   i, j, X, Y: Integer;
 begin
-  X := StringGrid.ColCount - 1;
-  Y := StringGrid.RowCount - 1;
+  X := DrawGrid.ColCount - 1;
+  Y := DrawGrid.RowCount - 1;
 
-  SetLength(FillStatus, X+1, Y+1);
-  for i := 0 to X do
-    for j := 0 to Y do
-      FillStatus[i, j] := False;
+  SetLength(ScheduleItems, X+1, Y+1, 0, 0);
 
   with ScheduleSQLQuery do begin
     Close;
     SQL.Clear;
-    SQL.Text := TMeta.MakeQuery(ScheduleTable, F.MakeQuery);
+    SQL.Text := TMeta.MakeQuery(ScheduleTable, F.MakeQuery) + ' ORDER BY ' + TableV.FName + '.' + TableV.FSortField + ',' + TableH.FName + '.' + TableH.FSortField;
     for i := 0 to High(F.FilterPanels) do begin
       with F.FilterPanels[i] do begin
         if not FCheckBox.Checked then Continue;
@@ -147,30 +222,35 @@ begin
     end;
     Open;
     First;
+    i := 1;
+    j := 1;
     while not EOF do begin
-      for i := 1 to X do
-        for j := 1 to Y do
-          if (Fields[AFieldH].AsString = HVals[i]) and (Fields[AFieldV].AsString = VVals[j]) then
-            FillCell(i, j);
+      if (i > X) and (j > Y) then Break;
+      if (Fields[AFieldH].AsString = HVals[i]) and (Fields[AFieldV].AsString = VVals[j]) then begin
+        FillCell(i, j);
         Next;
+        Continue;
+      end;
+      if i < X then
+        Inc(i)
+      else begin
+        Inc(j);
+        i := 1;
+      end;
     end;
   end;
-
 end;
 
 procedure TFormSchedule.LoadGrid;
 var
-  Rect: TRect;
-var
   i, j, FieldH, FieldV: Integer;
-  TableH, TableV: TTableInfo;
 begin
-  StringGrid.Clean;
+  DrawGrid.ColCount := 0;
+  FillChar(ScheduleItems, SizeOf(ScheduleItems), 0);
   TableH := Tables[ComboBoxH.ItemIndex];
   TableV := Tables[ComboBoxV.ItemIndex];
-  FillHeader(TableH, H);
-  FillHeader(TableV, V);
-  StringGrid.RowHeights[0] := 23;
+  DrawGrid.ColCount := FillHeader(TableH, HVals);
+  DrawGrid.RowCount := FillHeader(TableV, VVals);
 
   for i := 1 to High(ScheduleTable.FFields) do
     with ScheduleTable.FFields[i] do begin
@@ -180,10 +260,37 @@ begin
         FieldV := i;
     end;
 
+  FillCheckBoxGroup(FieldH, FieldV);
   FillItems(FieldH, FieldV);
 end;
 
-procedure TFormSchedule.BtnSubmitClick(Sender: TObject);
+function TFormSchedule.PointIntoRect(Point: TPoint; Rect: TRect): Boolean;
+begin
+  Result :=
+    (Point.x >= Rect.Left) and
+    (Point.x <= Rect.Right) and
+    (Point.y >= Rect.Top) and
+    (Point.y <= Rect.Bottom);
+end;
+
+procedure TFormSchedule.DrawGridMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  ClickPoint: TPoint;
+  NeededRect, GridCellRect: TRect;
+  Col, Row: Integer;
+begin
+  Col := DrawGrid.MouseCoord(X, Y).x;
+  Row := DrawGrid.MouseCoord(X, Y).y;
+  ClickPoint := Point(X, Y);
+  GridCellRect := DrawGrid.CellRect(Col, Row);
+  NeededRect := Rect(GridCellRect.Right-20, GridCellRect.Bottom-20, GridCellRect.Right, GridCellRect.Bottom);
+  if PointIntoRect(ClickPoint, NeededRect) then begin
+    ShowMessage('ok');
+  end;
+end;
+
+procedure TFormSchedule.UpdateGridOnClick(Sender: TObject);
 begin
   LoadGrid;
 end;
@@ -196,11 +303,6 @@ begin
   ComboBoxV.ItemIndex := ComboBoxH.ItemIndex;
   ComboBoxH.ItemIndex := tmp;
   LoadGrid;
-end;
-
-procedure TFormSchedule.CheckGroupItemClick(Sender: TObject; Index: integer);
-begin
-
 end;
 
 procedure TFormSchedule.PopUpForm;
