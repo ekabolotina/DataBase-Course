@@ -28,7 +28,6 @@ object CardEditForm: TCardEditForm
     Top = 15
     Width = 74
     Caption = 'Сохранить'
-    Enabled = False
     OnClick = BtnSaveClick
     TabOrder = 1
   end
@@ -46,12 +45,20 @@ object CardEditForm: TCardEditForm
     Database = ConnectModule.IBConnection
     Transaction = ConnectModule.SQLTransaction
     Params = <>
-    left = 40
-    top = 200
+    left = 264
+    top = 208
   end
   object CardEditDataSource: TDatasource
     DataSet = CardEditSQLQuery
-    left = 152
-    top = 200
+    left = 336
+    top = 208
+  end
+  object ProcessSQL: TSQLQuery
+    FieldDefs = <>
+    Database = ConnectModule.IBConnection
+    Transaction = ConnectModule.SQLTransaction
+    Params = <>
+    left = 56
+    top = 208
   end
 end
