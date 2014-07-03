@@ -27,7 +27,7 @@ type
     procedure AddConflict(AName: String; AEqual, AUnequal: array of Integer);
     function MakeQuery(AID: Integer): String;
     function GetConflictPairs(AID: Integer): TConflictPairs;
-    function IsInConflict(AID: Integer): Boolean;
+    function IsInConflict(AID: Integer): TPoint;
   end;
 
 var
@@ -102,15 +102,15 @@ begin
   Result := tmpPairs;
 end;
 
-function TConflictsModule.IsInConflict(AID: Integer): Boolean;
+function TConflictsModule.IsInConflict(AID: Integer): TPoint;
 var
   i, j: Integer;
 begin
   for i := 0 to High(Conflicts) do
     for j := 0 to High(ConflictPairs[i]) do
       if (ConflictPairs[i][j].x = AID) or (ConflictPairs[i][j].y = AID) then
-        Exit(True);
-  Exit(False);
+        Exit(Point(i, j));
+  Exit(Point(-1, -1));
 end;
 
 end.
