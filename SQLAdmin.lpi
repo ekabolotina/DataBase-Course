@@ -109,6 +109,7 @@
         <Filename Value="conflictsmeta.pas"/>
         <IsPartOfProject Value="True"/>
         <ComponentName Value="ConflictsModule"/>
+        <HasResources Value="True"/>
         <ResourceBaseClass Value="DataModule"/>
         <UnitName Value="ConflictsMeta"/>
       </Unit9>
