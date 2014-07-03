@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, sqldb, db, FileUtil, Forms, Controls, Graphics, Dialogs,
-  Menus, Connect, Referen, MetaUnit, StdCtrls, DbCtrls, Schedule;
+  Menus, Connect, Referen, MetaUnit, StdCtrls, DbCtrls, Schedule, ConflictsMeta;
 
 type
 
@@ -113,6 +113,15 @@ begin
     MkFld('Group_ID', 'Группа', 6, 'Groups', 'ID'),
     MkFld('Room_ID', 'Аудитория', 5,'Rooms', 'ID')
   ]);
+
+  with ConflictsModule do begin
+    AddConflict('Разные пары в одной аудитории', [4, 5, 7], [3]);
+    AddConflict('Преподаватель в разных аудиториях', [3, 4, 5], [7]);
+    AddConflict('Преподаватель на разных дисциплинах', [3, 4, 5], [1]);
+    AddConflict('Группа в разных аудиториях', [4, 5, 6], [7]);
+    AddConflict('Группа на разных дициплинах', [4, 5, 6], [1]);
+    AddConflict('Дублирующися пары', [1, 2, 3, 4, 5, 6, 7], []);
+  end;
 
   MakeUpTableList();
 end;
