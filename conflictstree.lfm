@@ -23,6 +23,7 @@ object ConflictsTreeForm: TConflictsTreeForm
     DefaultItemHeight = 18
     ReadOnly = True
     TabOrder = 0
+    OnDblClick = TreeViewDblClick
     Options = [tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
   end
 end
