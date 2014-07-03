@@ -16,10 +16,12 @@ type
   { TFormSchedule }
 
   TFormSchedule = class(TForm)
+    BtnExport: TButton;
     ImageList: TImageList;
     PopUpMenuCellEdit: TMenuItem;
     PopUpMenuCellDelete: TMenuItem;
     PopupMenuCell: TPopupMenu;
+    SaveDialog: TSaveDialog;
   const
     CellSize = 200;
   type
@@ -38,6 +40,7 @@ type
       Id: Integer;
     end;
     DinArr = array of THeader;
+  procedure BtnExportClick(Sender: TObject);
   procedure PopUpMenuCellDeleteClick(Sender: TObject);
   procedure PopUpMenuCellEditClick(Sender: TObject);
   published
@@ -94,6 +97,7 @@ type
     procedure RemoveControlPanel(ACol, ARow: Integer);
     procedure UpdateMouse(ACol, ARow: Integer);
     procedure ShowPopUpMenu(AID, X, Y: Integer);
+    procedure ExportScheduleToHTML(var fo: TextFile);
   end;
 
 var
@@ -174,6 +178,7 @@ begin
   if (aRow = 0) and (aCol = 0) then begin
     DrawGrid.Canvas.MoveTo(aRect.TopLeft);
     DrawGrid.Canvas.LineTo(aRect.BottomRight);
+    Exit;
   end;
 
   marginX := aRect.Left;
@@ -566,6 +571,70 @@ var
 begin
   FormSchedule := TFormSchedule.Create(nil);
   FormSchedule.ShowModal;
+end;
+
+procedure TFormSchedule.ExportScheduleToHTML(var fo: TextFile);
+var
+  X, Y, i, j, k, l: Integer;
+  headerFile: TextFile;
+  tmpStr: String;
+begin
+  AssignFile(headerFile, 'common\header.txt');
+  Reset(headerFile);
+  while not EOF(headerFile) do begin
+    ReadLn(headerFile, tmpStr);
+    WriteLn(fo, tmpStr);
+  end;
+  CloseFile(headerFile);
+
+  X := DrawGrid.ColCount - 1;
+  Y := DrawGrid.RowCount - 1;
+
+  for i := 0 to Y do begin
+    Writeln(fo, '<tr valign = "top">');
+    for j := 0 to X do begin
+      if (i = 0) xor (j = 0) then
+        Write(fo, '<td class = "h">')
+      else
+        Write(fo, '<td>');
+      if (i = 0) and (j = 0) then begin
+        Writeln(fo, '</td>');
+        Continue;
+      end;
+      if i = 0 then begin
+        Writeln(fo, HVals[j].Name + '</td>');
+        Continue;
+      end;
+      if j = 0 then begin
+        Writeln(fo, VVals[i].Name + '</td>');
+        Continue;
+      end;
+      for k := 0 to High(ScheduleItems[j, i]) do begin
+        for l := 1 to High(ScheduleItems[j, i, k]) do begin
+          Write(fo, '<b>' + ScheduleItems[j][i][k][l].Name + ':</b> ' + ScheduleItems[j][i][k][l].Val + '<br />');
+        end;
+        if k <> High(ScheduleItems[j, i]) then
+          WriteLn(fo, '<div class = "separator">&nbsp</div>');
+      end;
+      WriteLn(fo, '</td>');
+    end;
+    Writeln(fo, '</tr>');
+  end;
+  WriteLn(fo, '</table></body></html>');
+end;
+
+procedure TFormSchedule.BtnExportClick(Sender: TObject);
+var
+  out_p: TextFile;
+  path: String;
+begin
+  if SaveDialog.Execute then begin
+    path := UTF8ToSys(SaveDialog.FileName);
+    AssignFile(out_p, path);
+    Rewrite(out_p);
+    ExportScheduleToHTML(out_p);
+    CloseFile(out_p);
+  end;
 end;
 
 {$R *.lfm}

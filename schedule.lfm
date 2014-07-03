@@ -1,7 +1,7 @@
 object FormSchedule: TFormSchedule
-  Left = 6
+  Left = 683
   Height = 600
-  Top = 34
+  Top = 51
   Width = 1292
   Caption = 'Срезы расписания'
   ClientHeight = 600
@@ -139,6 +139,15 @@ object FormSchedule: TFormSchedule
       OnClick = UpdateGridOnClick
       State = cbChecked
       TabOrder = 3
+    end
+    object BtnExport: TButton
+      Left = 233
+      Height = 24
+      Top = 91
+      Width = 59
+      Caption = 'Экспорт'
+      OnClick = BtnExportClick
+      TabOrder = 4
     end
   end
   object FilterGroupBox: TGroupBox
@@ -375,5 +384,14 @@ object FormSchedule: TFormSchedule
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00
     }
+  end
+  object SaveDialog: TSaveDialog
+    Title = 'Экспорт расписания в HTML'
+    DefaultExt = '.html'
+    FileName = 'Schedule'
+    Filter = 'html|*.html|txt|*.txt'
+    Options = [ofOldStyleDialog, ofEnableSizing, ofViewDetail]
+    left = 48
+    top = 104
   end
 end
