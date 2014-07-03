@@ -12,6 +12,13 @@ type
 
   TShowTableProc = procedure of Object;
 
+  TFilterInfo = class
+    FFieldId, FSignId: Integer;
+    FConstraint: String;
+    FEnabled: Boolean;
+    constructor Create(AFieldId, ASignId: Integer; AConstraint: String; AEnabled: Boolean);
+  end;
+
   TFilters = class
     type
     TFilterPanel = record
@@ -22,6 +29,7 @@ type
       FRemove: TButton;
       FCheckBox: TCheckBox;
     end;
+    TFilterInfoArray = array of TFilterInfo;
     public
       FilterType: TComboBox;
       SubmitBtn, AddBtn: TButton;
@@ -36,18 +44,59 @@ type
       procedure AddBthClick(Sender: TObject);
       procedure SubmitBtnClick(Sender: TObject);
       procedure SubmitBtnSwitch(Sender: TObject);
-      procedure MkPnl;
+      procedure MkPnl(AFilterInfo: TFilterInfo = nil);
       function MakeQuery(): String;
+      procedure CollectDefFilters(var AFilterArr: TFilterInfoArray);
       constructor Create(ATable: TTableInfo; AParent: TWinControl;
-        AShowTableProc: TShowTableProc; AMaxCount: Integer);
+        AShowTableProc: TShowTableProc; AMaxCount: Integer; AFilters: TFilterInfoArray = nil);
   end;
 
 implementation
 
-procedure TFilters.MkPnl;
+constructor TFilterInfo.Create(AFieldId, ASignId: Integer; AConstraint: String; AEnabled: Boolean);
+begin
+  FFieldId := AFieldId;
+  FSignId := ASignId;
+  FConstraint := AConstraint;
+  FEnabled := AEnabled;
+end;
+
+procedure TFilters.CollectDefFilters(var AFilterArr: TFilterInfoArray);
 var
   i: Integer;
 begin
+  SetLength(AFilterArr, Length(FilterPanels));
+  for i := 0 to High(FilterPanels) do
+    with FilterPanels[i] do begin
+      AFilterArr[i] := TFilterInfo.Create(FFieldsList.ItemIndex, FSignsList.ItemIndex, FConstraint.Text, FCheckBox.Checked);
+    end;
+end;
+
+procedure TFilters.MkPnl(AFilterInfo: TFilterInfo);
+type
+  TDefaultVals = record
+    FFieldId, FSignId: Integer;
+    FConstraint: String;
+    FEnabled: Boolean;
+  end;
+var
+  i: Integer;
+  DefaultVals: TDefaultVals;
+begin
+  if AFilterInfo <> nil then
+    with DefaultVals do begin
+      FFieldId := AFilterInfo.FFieldId;
+      FSignId := AFilterInfo.FSignId;
+      FConstraint := AFilterInfo.FConstraint;
+      FEnabled := AFilterInfo.FEnabled;
+    end
+  else
+    with DefaultVals do begin
+      FFieldId := 0;
+      FSignId := 0;
+      FConstraint := '';
+      FEnabled := True;
+    end;
   SetLength(FFilterStrList, Length(FTable.FFields));
   for i := 0 to High(FFilterStrList) do
     FFilterStrList[i] := FTable.FFields[i].FCaption;
@@ -82,7 +131,7 @@ begin
         Style := csDropDownList;
         Items.AddStrings(FFilterStrList);
         Items.Delete(0);
-        ItemIndex := 0;
+        ItemIndex := DefaultVals.FFieldId;
         OnChange := @SubmitBtnSwitch;
         Parent := FPanel;
       end;
@@ -95,7 +144,7 @@ begin
         Left := 160;
         Style := csDropDownList;
         Items.AddStrings(['>', '<', '=', '>=', '<=', '<>']);
-        ItemIndex := 0;
+        ItemIndex := DefaultVals.FSignId;
         OnChange := @SubmitBtnSwitch;
         Parent := FPanel;
       end;
@@ -108,6 +157,7 @@ begin
         Left := 220;
         OnChange := @SubmitBtnSwitch;
         Parent := FPanel;
+        Text := DefaultVals.FConstraint;
       end;
 
       if Length(FilterPanels) <> 1 then begin
@@ -137,11 +187,13 @@ begin
           Parent := FPanel;
         end;
       end;
+      if not DefaultVals.FEnabled then
+        FCheckBox.Checked := False;
     end;
 end;
 
 constructor TFilters.Create(ATable: TTableInfo; AParent: TWinControl;
-  AShowTableProc: TShowTableProc; AMaxCount: Integer);
+  AShowTableProc: TShowTableProc; AMaxCount: Integer; AFilters: TFilterInfoArray);
 var
   i: Integer;
 begin
@@ -165,10 +217,14 @@ begin
     Height := 23;
     Left := 560;
     Top := 6;
-    Caption := 'Обно';
+    Caption := 'Ок';
     OnClick := @SubmitBtnClick;
     Parent := FParent;
   end;
+  for i := 0 to High(AFilters) do
+    MkPnl(AFilters[i]);
+  if Length(AFilters) = 0 then
+    MkPnl;
 end;
 
 procedure TFilters.AddBthClick(Sender: TObject);
