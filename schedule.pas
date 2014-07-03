@@ -70,8 +70,6 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure DrawGridMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer
       );
-    procedure DrawGridMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
     procedure RomoveClick(Sender: TObject);
     procedure InsertClick(Sender: TObject);
   public
@@ -242,10 +240,8 @@ end;
 
 procedure TFormSchedule.FillCell(X, Y: Integer);
 var
-  i, GridW, GridH, ItemsCount, StrCount: Integer;
+  i, ItemsCount, StrCount: Integer;
 begin
-  GridW := DrawGrid.ColCount;
-  GridH := DrawGrid.RowCount;
   ItemsCount := Length(ScheduleItems[X, Y]);
   SetLength(ScheduleItems[X, Y], ItemsCount + 1);
 
@@ -291,6 +287,7 @@ begin
     Close;
     SQL.Clear;
     SQL.Text := TMeta.MakeQuery(ScheduleTable, F.MakeQuery) + ' ORDER BY ' + TableV.FName + '.' + TableV.FSortField + ',' + TableH.FName + '.' + TableH.FSortField;
+    ShowMessage(SQL.Text);
     for i := 0 to High(F.FilterPanels) do begin
       with F.FilterPanels[i] do begin
         if not FCheckBox.Checked then Continue;
@@ -320,7 +317,7 @@ end;
 
 procedure TFormSchedule.LoadGrid;
 var
-  i, j: Integer;
+  i: Integer;
 begin
   RemoveControlPanel(CurrentMouse.X, CurrentMouse.Y);
   CurrentMouse.X := -1;
@@ -359,29 +356,11 @@ begin
     (Point.y <= Rect.Bottom);
 end;
 
-procedure TFormSchedule.DrawGridMouseUp(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
-var
-  ClickPoint: TPoint;
-  NeededRect, GridCellRect: TRect;
-  Col, Row: Integer;
-begin
-  Col := DrawGrid.MouseCoord(X, Y).x;
-  Row := DrawGrid.MouseCoord(X, Y).y;
-
-  ClickPoint := Point(X, Y);
-  GridCellRect := DrawGrid.CellRect(Col, Row);
-  NeededRect := Rect(GridCellRect.Right-20, GridCellRect.Bottom-20, GridCellRect.Right, GridCellRect.Bottom);
-  if PointIntoRect(ClickPoint, NeededRect) then begin
-    //ReferenForm.PopupForm(ScheduleTable, DefaultFilters);
-  end;
-end;
-
 procedure TFormSchedule.DrawGridMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   FormShift: TPoint;
-  rowsHeight1, rowsHeight2, countItems, Col, Row: Integer;
+  rowsHeight1, rowsHeight2, Col, Row: Integer;
 begin
   Col := DrawGrid.MouseCoord(X, Y).x;
   Row := DrawGrid.MouseCoord(X, Y).y;
@@ -422,7 +401,6 @@ end;
 procedure TFormSchedule.DrawGridMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Integer);
 var
-  currRect: TRect;
   Col, Row: Integer;
 begin
   Col := DrawGrid.MouseCoord(X, Y).x;
@@ -445,10 +423,8 @@ begin
 end;
 
 procedure TFormSchedule.PopUpMenuCellEditClick(Sender: TObject);
-var
-  tmpArr: array of Integer;
 begin
-  TCardEditForm.ShowEditor(ScheduleTable, StrToInt(IdtoRemoveOrEdit), True, @LoadGrid, tmpArr);
+  TCardEditForm.ShowEditor(ScheduleTable, StrToInt(IdtoRemoveOrEdit), True, @LoadGrid);
 end;
 
 procedure TFormSchedule.PopUpMenuCellShowConflictClick(Sender: TObject);
@@ -461,7 +437,7 @@ end;
 
 procedure TFormSchedule.PopUpMenuCellDeleteClick(Sender: TObject);
 var
-  answer, i: Integer;
+  answer: Integer;
   query: String;
 begin
   answer := MessageDlg(Format('Вы действительно хотите удалить выбраннцю запись (ID %s)', [IdtoRemoveOrEdit]), mtCustom, [mbYes, mbNo], 0);
@@ -481,7 +457,7 @@ end;
 procedure TFormSchedule.RomoveClick(Sender: TObject);
 var
   answer, i: Integer;
-  query, tmpId : String;
+  query : String = '';
 begin
   answer := MessageDlg(Format('Вы действительно хотите удалить выбранные записи (%d штук)', [Length(ScheduleItems[CurrentMouse.X, CurrentMouse.Y])]), mtCustom, [mbYes, mbNo], 0);
   if answer = 6 then begin
@@ -502,14 +478,11 @@ end;
 
 procedure TFormSchedule.InsertClick(Sender: TObject);
 var
-  tmpArr: array of Integer;
-  i: Integer;
+  tmpArr: array of TPoint;
 begin
-  SetLength(tmpArr, Length(ScheduleTable.FFields));
-  for i := 0 to High(tmpArr) do
-    tmpArr[i] := -1;
-  tmpArr[FieldH] := HVals[CurrentMouse.x].Id;
-  tmpArr[FieldV] := VVals[CurrentMouse.y].Id;
+  SetLength(tmpArr, 2);
+  tmpArr[0] := Point(FieldH, HVals[CurrentMouse.x].Id);
+  tmpArr[1] := Point(FieldV, VVals[CurrentMouse.y].Id);
   TCardEditForm.ShowEditor(ScheduleTable, 0, False, @LoadGrid, tmpArr);
 end;
 
@@ -600,8 +573,6 @@ begin
 end;
 
 procedure TFormSchedule.PopUpForm;
-var
-  i: Integer;
 begin
   FormSchedule := TFormSchedule.Create(nil);
   FormSchedule.ShowModal;
@@ -620,7 +591,7 @@ begin
     WriteLn(fo, tmpStr);
   end;
   CloseFile(headerFile);
-
+  k := 0;
   WriteLn(fo, '<fieldset><legend><strong>Активные фильтры</strong></legend><ol>');
   WriteLn(fo, Format('<li><i>По горизонтали:</i> %s</li>', [TableH.FCaption]));
   WriteLn(fo, Format('<li><i>По вертикали:</i> %s</li>', [TableV.FCaption]));
@@ -695,7 +666,7 @@ procedure TFormSchedule.ExportScheduleToExcel(path: String);
 var
     ExcelApp: Variant;
     i, j, X, Y, k, l: Integer;
-    s,t: String;
+    s: String;
 begin
   ExcelApp := CreateOleObject('Excel.Application');
   ExcelApp.Application.EnableEvents := False;
@@ -760,8 +731,6 @@ begin
 end;
 
 procedure TFormSchedule.BtnExportExcelClick(Sender: TObject);
-var
-  path: String;
 begin
   with SaveDialog do begin
     FileName := 'Schedule.xlsx';
