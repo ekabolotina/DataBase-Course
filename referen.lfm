@@ -1,14 +1,14 @@
 object ReferenForm: TReferenForm
-  Left = 147
+  Left = 29
   Height = 453
-  Top = 166
-  Width = 1145
+  Top = 229
+  Width = 1230
   Align = alClient
   Caption = 'ReferenForm'
   ClientHeight = 0
   ClientWidth = 0
   Constraints.MinHeight = 410
-  Constraints.MinWidth = 885
+  Constraints.MinWidth = 1230
   ParentFont = True
   PopupMode = pmAuto
   Position = poScreenCenter
@@ -17,7 +17,7 @@ object ReferenForm: TReferenForm
     Left = 632
     Height = 426
     Top = 17
-    Width = 508
+    Width = 593
     Align = alRight
     Anchors = [akTop, akLeft, akRight, akBottom]
     AutoAdvance = aaNone

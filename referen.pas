@@ -13,12 +13,10 @@ type
 
   { TReferenForm }
 
-  TEditFrms = record
-    Frm: TCardEditForm;
-    ID: Integer;
-  end;
-
   TReferenForm = class(TForm)
+  type
+    TFilterInfoArray = array of TFilterInfo;
+  published
     BtnInsert: TButton;
     BtnEdit: TButton;
     BtnRemove: TButton;
@@ -30,7 +28,7 @@ type
     procedure BtnInsertClick(Sender: TObject);
     procedure BtnRemoveClick(Sender: TObject);
     procedure DBGridTitleClick(Column: TColumn);
-    procedure PopupForm(ATable: TTableInfo);
+    procedure PopupForm(ATable: TTableInfo; AFilterInfo: TFilterInfoArray = nil);
     procedure ShowTable;
   public
     ThisTable: TTableInfo;
@@ -40,9 +38,7 @@ type
     SortType, SortIcon: String;
     SortIndex: Integer;
     InsFrm: TCardInsertForm;
-    CardEditForm: array of TEditFrms;
     F: TFilters;
-    procedure ClearTrash(AID: Integer);
     function MakeLocalQuery: String;
   end;
 
@@ -77,23 +73,7 @@ begin
   DBGrid.Columns[0].Visible := False;
 end;
 
-procedure TReferenForm.ClearTrash(AID: Integer);
-var
-  i: Integer;
-  shift: Boolean;
-begin
-  shift := False;
-  for i := 0 to High(CardEditForm) do
-    if shift then begin
-      CardEditForm[i-1].Frm := CardEditForm[i].Frm;
-      CardEditForm[i-1].ID := CardEditForm[i].ID;
-    end else if CardEditForm[i].ID = AID then
-      shift := True;
-  if shift then
-    SetLength(CardEditForm, High(CardEditForm));
-end;
-
-procedure TReferenForm.PopupForm(ATable: TTableInfo);
+procedure TReferenForm.PopupForm(ATable: TTableInfo; AFilterInfo: TFilterInfoArray);
 var
   i: Integer;
 begin
@@ -104,8 +84,7 @@ begin
   ReferenForm := TReferenForm.Create(nil);
   Caption := ATable.FCaption;
   DBGrid.Top := 40;
-  F := TFilters.Create(ThisTable, FilterGroup, @ShowTable, 10);
-  F.MkPnl;
+  F := TFilters.Create(ThisTable, FilterGroup, @ShowTable, 10, AFilterInfo);
   ShowTable;
   Show;
 end;
@@ -158,35 +137,16 @@ begin
 
 procedure TReferenForm.BtnInsertClick(Sender: TObject);
 begin
-  SetLength(CardEditForm, Length(CardEditForm)+1);
-  with CardEditForm[High(CardEditForm)] do begin
-    Frm := TCardEditForm.Create(nil);
-    Frm.PopUpForm(ThisTable, 0, [''], False, @ShowTable, @ClearTrash);
-  end;
+  TCardEditForm.ShowEditor(ThisTable, 0, False, @ShowTable);
 end;
 
 procedure TReferenForm.BtnEditClick(Sender: TObject);
 var
   forEdit, i: Integer;
-  FieldsVals: array of String;
 begin
   forEdit := Datasource.DataSet.FieldByName('ID').AsInteger;
-  SetLength(FieldsVals, Length(ThisTable.FFields));
-  for i := 1 to High(ThisTable.FFields) do
-    FieldsVals[i] := Datasource.DataSet.Fields[i].AsString;
-  for i := 0 to High(CardEditForm) do
-    if CardEditForm[i].ID = forEdit then begin
-      CardEditForm[i].Frm.BringToFront;
-      Exit;
-    end;
-
-  SetLength(CardEditForm, Length(CardEditForm)+1);
-  with CardEditForm[High(CardEditForm)] do begin
-    Frm := TCardEditForm.Create(nil);
-    ID := forEdit;
-    Frm.PopUpForm(ThisTable, forEdit, FieldsVals, True, @ShowTable, @ClearTrash);
-  end;
-
+  if forEdit = 0 then Exit;
+  TCardEditForm.ShowEditor(ThisTable, forEdit, True, @ShowTable);
 end;
 
 procedure TReferenForm.BtnRemoveClick(Sender: TObject);
@@ -195,6 +155,7 @@ var
   M: TMeta;
 begin
   forRemove := Datasource.DataSet.FieldByName('ID').AsInteger;
+  if forRemove = 0 then Exit;
   answer := MessageDlg(Format('Вы действительно хотите удалить выбранную запись (ID %d)', [forRemove]), mtCustom, [mbYes, mbNo], 0);
   if answer = 6 then begin
     with SQLQuery do begin
