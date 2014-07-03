@@ -19,7 +19,6 @@ type
   end;
 
   TRefreshTableProc = procedure of Object;
-  TClearTrashProc = procedure(AID: Integer) of Object;
 
   { TCardEditForm }
 
@@ -36,26 +35,79 @@ type
     CurrentTbl: TTableInfo;
     CurrentID: Integer;
     CurrentisEditorEnabled: Boolean;
-    CurrentFieldsVals: array of String;
     EditPanels: array of TEditPanel;
     CurrentIDs: array of Integer;
     RefreshTableProc: TRefreshTableProc;
-    ClearTrashProc: TClearTrashProc;
-    procedure PopUpForm(ATable: TTableInfo; AID: Integer;
-      AFieldsVals: array of String; isEditorEnabled: Boolean;
-      ARefreshTableProc: TRefreshTableProc; AClearTrashProc: TClearTrashProc);
     procedure BuildEditor;
     procedure CollectIDs;
     procedure BtnSaveEnDis(Sender: TObject);
     function MakeQuery(): String;
+    function GetFieldVal(AField: String): String;
+    procedure ClearTrash(AID: Integer);
+    class procedure ShowEditor(ATable: TTableInfo; AID: Integer; isEditorEnabled: Boolean;
+      ARefreshTableProc: TRefreshTableProc);
   end;
 
+  TEditFrms = record
+    Frm: TCardEditForm;
+    ID: Integer;
+  end;
+
+var
+  CardEditForm: array of TEditFrms;
+
 implementation
+
+class procedure TCardEditForm.ShowEditor(ATable: TTableInfo; AID: Integer;
+  isEditorEnabled: Boolean; ARefreshTableProc: TRefreshTableProc);
+var
+  i: Integer;
+begin
+  for i := 0 to High(CardEditForm) do
+    if CardEditForm[i].ID = AID then begin
+      CardEditForm[i].Frm.BringToFront;
+      Exit;
+    end;
+
+  SetLength(CardEditForm, Length(CardEditForm)+1);
+  with CardEditForm[High(CardEditForm)] do begin
+    Frm := TCardEditForm.Create(nil);
+    ID := AID;
+  end;
+  with CardEditForm[High(CardEditForm)].Frm do begin
+    Show;
+    if isEditorEnabled then
+      Caption := 'Редактирование записи'
+    else
+      Caption := 'Вставка новой записи';
+    CurrentTbl := ATable;
+    CurrentID := AID;
+    CurrentisEditorEnabled := isEditorEnabled;
+    RefreshTableProc := ARefreshTableProc;
+    BuildEditor;
+  end;
+end;
+
+procedure TCardEditForm.ClearTrash(AID: Integer);
+var
+  i: Integer;
+  shift: Boolean;
+begin
+  shift := False;
+  for i := 0 to High(CardEditForm) do
+    if shift then begin
+      CardEditForm[i-1].Frm := CardEditForm[i].Frm;
+      CardEditForm[i-1].ID := CardEditForm[i].ID;
+    end else if CardEditForm[i].ID = AID then
+      shift := True;
+  if shift then
+    SetLength(CardEditForm, High(CardEditForm));
+end;
 
 procedure TCardEditForm.BtnCancelClick(Sender: TObject);
 begin
   if CurrentisEditorEnabled then
-    ClearTrashProc(CurrentID);
+    ClearTrash(CurrentID);
   Close;
 end;
 
@@ -95,7 +147,7 @@ begin
   SetLength(CurrentIDs, Length(CurrentTbl.FFields));
   for i := 0 to High(CurrentIDs) do begin
     if CurrentTbl.FFields[i].FForeignKeyTable <> '' then
-      CurrentIDs[i] := CardEditDataSource.DataSet.FieldByName(CurrentTbl.FFields[i].FName).AsInteger
+      CurrentIDs[i] := CardEditSQLQuery.FieldByName(CurrentTbl.FFields[i].FName).AsInteger
     else
       CurrentIDs[i] := -1;
   end;
@@ -131,7 +183,7 @@ begin
       EditPanels[i].DSrc.DataSet := EditPanels[i].SQLQr;
       with EditPanels[i].SQLQr do begin
         Close;
-        SQL.Text := Format('SELECT ID, name FROM %s ORDER BY Name', [CurrentTbl.FFields[i].FForeignKeyTable]);
+        SQL.Text := Format('SELECT ID, Name FROM %s ORDER BY Name', [CurrentTbl.FFields[i].FForeignKeyTable]);
         Open;
       end;
 
@@ -164,10 +216,21 @@ begin
           Enabled := False;
           Text := IntToStr(CurrentID);
         end else if CurrentisEditorEnabled then
-          Text := CurrentFieldsVals[i];
+          Text := GetFieldVal(CurrentTbl.FFields[i].FName);
       end;
     end;
     preTop += 25;
+  end;
+end;
+
+function TCardEditForm.GetFieldVal(AField: String): String;
+begin
+  with CardEditSQLQuery do begin
+    Close;
+    SQL.Clear;
+    SQL.Text := Format('SELECT %s FROM %s WHERE ID = %d', [AField, CurrentTbl.FName, CurrentID]);
+    Open;
+    Result := FieldByName(AField).AsString;
   end;
 end;
 
@@ -184,8 +247,8 @@ begin
     for i := 1 to High(CurrentTbl.FFields) do
       if CurrentTbl.FFields[i].FForeignKeyTable <> '' then begin
         CardEditSQLQuery.ParamByName(Format('Val%d', [i])).AsString :=
-          EditPanels[i].CmbBox.ListSource.DataSet.FieldByName('id').AsString;
-        if EditPanels[i].CmbBox.ItemIndex = -1 then
+          EditPanels[i].CmbBox.KeyValue;
+        if EditPanels[i].CmbBox.KeyValue = -1 then
           empty := True;
       end
       else begin
@@ -197,10 +260,12 @@ begin
     if empty then
       MessageDlg('Заполните все поля', mtCustom, [mbOK], 0)
     else begin
+      ShowMessage(SQL.Text);
       ExecSQL;
       ConnectModule.SQLTransaction.Commit;
       BtnSave.Enabled := False;
       RefreshTableProc;
+      BtnCancel.Click;
     end;
   end;
 end;
@@ -208,27 +273,9 @@ end;
 procedure TCardEditForm.FormClose(Sender: TObject; var CloseAction: TCloseAction
   );
 begin
-  ClearTrashProc(CurrentID);
+  ClearTrash(CurrentID);
 end;
 
-procedure TCardEditForm.PopUpForm(ATable: TTableInfo; AID: Integer; AFieldsVals: array of String; isEditorEnabled: Boolean; ARefreshTableProc: TRefreshTableProc; AClearTrashProc: TClearTrashProc);
-var
-  i: Integer;
-begin
-  Show;
-  Caption := 'Редактирование записи';
-  CurrentTbl := ATable;
-  CurrentID := AID;
-  CurrentisEditorEnabled := isEditorEnabled;
-  RefreshTableProc := ARefreshTableProc;
-  ClearTrashProc := AClearTrashProc;
-  if isEditorEnabled then begin
-    SetLength(CurrentFieldsVals, Length(AFieldsVals));
-    for i := 1 to High(AFieldsVals) do
-      CurrentFieldsVals[i] := AFieldsVals[i];
-  end;
-  BuildEditor;
-end;
 
 {$R *.lfm}
 
