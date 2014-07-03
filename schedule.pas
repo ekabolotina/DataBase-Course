@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, sqldb, db, FileUtil, Forms, Controls, Graphics, Dialogs,
   StdCtrls, Grids, ExtCtrls, Buttons, Menus, comobj, MetaUnit, Connect, Filters,
-  Referen, CardEdit;
+  Referen, CardEdit, ConflictsMeta, ConflictsTree;
 
 type
 
@@ -16,6 +16,7 @@ type
   { TFormSchedule }
 
   TFormSchedule = class(TForm)
+    ConflictsTreeBtn: TButton;
     BtnExportHTML: TButton;
     BtnExportExcel: TButton;
     ImageList: TImageList;
@@ -40,6 +41,7 @@ type
     DinArr = array of THeader;
   procedure BtnExportExcelClick(Sender: TObject);
   procedure BtnExportHTMLClick(Sender: TObject);
+  procedure ConflictsTreeBtnClick(Sender: TObject);
   procedure PopUpMenuCellDeleteClick(Sender: TObject);
   procedure PopUpMenuCellEditClick(Sender: TObject);
   published
@@ -161,7 +163,7 @@ procedure TFormSchedule.DrawGridDrawCell(Sender: TObject; aCol,
   aRow: Integer; aRect: TRect; aState: TGridDrawState);
 var
   TextStyle: TTextStyle;
-  i, j, marginX, marginY, insideMargin, outsideMargin: Integer;
+  i, j, marginX, marginY, insideMargin, outsideMargin, currItemMargin: Integer;
   currentRect: TRect;
   currString: String;
 begin
@@ -198,6 +200,7 @@ begin
   if Length(ScheduleItems[aCol, aRow]) = 0 then Exit;
   insideMargin := 0;
   outsideMargin := 2;
+  currItemMargin := 0;
   for i := 0 to High(ScheduleItems[aCol, aRow]) do begin
     if i = 2 then Break;
     insideMargin := 0;
@@ -210,15 +213,24 @@ begin
       DrawGrid.Canvas.TextRect(currentRect, marginX, marginY + insideMargin + outsideMargin, currString, TextStyle);
       insideMargin += Canvas.TextHeight(ScheduleItems[aCol][aRow][i][j]);
     end;
-    DrawGrid.Canvas.Brush.Color := $bbbbbb;
+    DrawGrid.Canvas.Pen.Color := $bbbbbb;
     outsideMargin += Canvas.TextHeight(ScheduleItems[aCol][aRow][i][j]) * CountFiledsToShow;
+    currItemMargin := Canvas.TextHeight(ScheduleItems[aCol][aRow][i][j]) * CountFiledsToShow;
     DrawGrid.Canvas.Line(aRect.Left + 50, marginY + outsideMargin + 5, aRect.Right - 50, marginY + outsideMargin + 5);
+    DrawGrid.Canvas.Pen.Color := clRed;
+    DrawGrid.Canvas.Pen.Style := psDash;
+    DrawGrid.Canvas.Pen.Width := 2;
+    if ConflictsModule.IsInConflict(StrToInt(ScheduleItems[aCol][aRow][i][0])) then
+      DrawGrid.Canvas.Line(aRect.Left + 2, marginY + (currItemMargin + 5) * i + 10, aRect.Left + 2, marginY + outsideMargin - 5);
     outsideMargin += 8;
+    DrawGrid.Canvas.Pen.Style := psSolid;
+    DrawGrid.Canvas.Pen.Width := 1;
   end;
 
   if Length(ScheduleItems[aCol, aRow]) > 1 then begin
     currentRect := Rect(aRect.Right - 15, aRect.Bottom - 15, aRect.Right, aRect.Bottom);
     DrawGrid.Canvas.Brush.Color := $bbbbbb;
+    DrawGrid.Canvas.Pen.Color := $bbbbbb;
     DrawGrid.Canvas.Polygon([aRect.BottomRight, Point(aRect.Right, aRect.Bottom-28), Point(aRect.Right-28, aRect.Bottom)]);
     DrawGrid.Canvas.TextRect(currentRect, currentRect.Left, currentRect.Top, IntToStr(Length(ScheduleItems[aCol, aRow])), TextStyle);
   end;
@@ -620,11 +632,15 @@ begin
         Continue;
       end;
       for k := 0 to High(ScheduleItems[i, j]) do begin
+        if ConflictsModule.IsInConflict(StrToInt(ScheduleItems[i][j][k][0])) then
+          Write(fo, '<div class = "conflict">');
         for l := 1 to High(ScheduleItems[i, j, k]) do begin
           Write(fo, '<strong>' + ScheduleTable.FFields[l].FCaption + ':</strong> ' + ScheduleItems[i][j][k][l] + '<br />');
         end;
         if k <> High(ScheduleItems[i, j]) then
           WriteLn(fo, '<div class = "separator">&nbsp</div>');
+        if ConflictsModule.IsInConflict(StrToInt(ScheduleItems[i][j][k][0])) then
+          Write(fo, '</div>');
       end;
       WriteLn(fo, '</td>');
     end;
@@ -700,6 +716,20 @@ begin
     end;
   end;
 
+  ExcelApp.Cells[Y + 3, 1].Font.Bold := True;
+  ExcelApp.Cells[Y + 3, 1].WrapText := True;
+  ExcelApp.Cells[Y + 3, 1].HorizontalAlignment := 3;
+  ExcelApp.Cells[Y + 3, 1] := WideString(UTF8ToSys('Активные фильтры'));
+  ExcelApp.Cells[Y + 4, 1] := WideString(UTF8ToSys(Format('1. По горизонтали: %s', [TableH.FCaption])));
+  ExcelApp.Cells[Y + 5, 1] := WideString(UTF8ToSys(Format('2. По вертикали: %s', [TableV.FCaption])));
+  k := 3;
+  for i := 0 to High(F.FilterPanels) do
+    with F.FilterPanels[i] do
+      if FCheckBox.Checked then begin
+        ExcelApp.Cells[Y + 6 + i, 1] := WideString(UTF8ToSys(Format('%d. %s %s %s', [k, FFieldsList.Items[FFieldsList.ItemIndex], FSignsList.Items[FSignsList.ItemIndex], FConstraint.Text])));
+        Inc(k);
+      end;
+
   ExcelApp.DisplayAlerts := False;
   ExcelApp.Worksheets[1].SaveAs(WideString(UTF8ToSys(path)));
   ExcelApp.Application.Quit;
@@ -717,6 +747,12 @@ begin
   end;
   if SaveDialog.Execute then
     ExportScheduleToExcel(SaveDialog.FileName);
+end;
+
+procedure TFormSchedule.ConflictsTreeBtnClick(Sender: TObject);
+begin
+  ConflictsTreeForm := TConflictsTreeForm.Create(nil);
+  ConflictsTreeForm.Show;
 end;
 
 {$R *.lfm}

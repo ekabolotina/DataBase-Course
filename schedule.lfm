@@ -1,11 +1,11 @@
 object FormSchedule: TFormSchedule
-  Left = 421
+  Left = 49
   Height = 600
-  Top = 35
+  Top = 54
   Width = 1292
   Caption = 'Срезы расписания'
-  ClientHeight = 600
-  ClientWidth = 1292
+  ClientHeight = 0
+  ClientWidth = 0
   Constraints.MinHeight = 600
   Constraints.MinWidth = 1292
   OnShow = FormShow
@@ -157,6 +157,15 @@ object FormSchedule: TFormSchedule
       Caption = 'Экспорт в Excel'
       OnClick = BtnExportExcelClick
       TabOrder = 5
+    end
+    object ConflictsTreeBtn: TButton
+      Left = 385
+      Height = 22
+      Top = 123
+      Width = 132
+      Caption = 'Дерево конфликтов'
+      OnClick = ConflictsTreeBtnClick
+      TabOrder = 6
     end
   end
   object FilterGroupBox: TGroupBox
