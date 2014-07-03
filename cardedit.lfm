@@ -46,12 +46,12 @@ object CardEditForm: TCardEditForm
     Database = ConnectModule.IBConnection
     Transaction = ConnectModule.SQLTransaction
     Params = <>
-    left = 77
-    top = 214
+    left = 40
+    top = 200
   end
   object CardEditDataSource: TDatasource
     DataSet = CardEditSQLQuery
     left = 152
-    top = 216
+    top = 200
   end
 end
