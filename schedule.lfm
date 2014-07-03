@@ -1,7 +1,7 @@
 object FormSchedule: TFormSchedule
-  Left = 683
+  Left = 421
   Height = 600
-  Top = 51
+  Top = 35
   Width = 1292
   Caption = 'Срезы расписания'
   ClientHeight = 600
@@ -17,15 +17,15 @@ object FormSchedule: TFormSchedule
     AnchorSideRight.Side = asrBottom
     AnchorSideBottom.Control = FilterGroupBox
     Left = 669
-    Height = 145
+    Height = 170
     Top = 5
     Width = 618
     Align = alRight
     BorderSpacing.Around = 5
     Caption = 'Срезы'
-    ClientHeight = 127
+    ClientHeight = 152
     ClientWidth = 614
-    Constraints.MaxHeight = 145
+    Constraints.MaxHeight = 170
     Constraints.MaxWidth = 618
     TabOrder = 0
     object LabelH: TLabel
@@ -140,14 +140,23 @@ object FormSchedule: TFormSchedule
       State = cbChecked
       TabOrder = 3
     end
-    object BtnExport: TButton
-      Left = 233
-      Height = 24
-      Top = 91
-      Width = 59
-      Caption = 'Экспорт'
-      OnClick = BtnExportClick
+    object BtnExportHTML: TButton
+      Left = 13
+      Height = 22
+      Top = 123
+      Width = 132
+      Caption = 'Экспорт в HTML'
+      OnClick = BtnExportHTMLClick
       TabOrder = 4
+    end
+    object BtnExportExcel: TButton
+      Left = 160
+      Height = 22
+      Top = 123
+      Width = 132
+      Caption = 'Экспорт в Excel'
+      OnClick = BtnExportExcelClick
+      TabOrder = 5
     end
   end
   object FilterGroupBox: TGroupBox
@@ -158,13 +167,13 @@ object FormSchedule: TFormSchedule
     AnchorSideBottom.Control = DrawGrid
     AnchorSideBottom.Side = asrBottom
     Left = 669
-    Height = 440
-    Top = 152
+    Height = 416
+    Top = 176
     Width = 618
     Anchors = [akTop, akRight, akBottom]
     BorderSpacing.Top = 200
     Caption = 'Фильтры'
-    ClientHeight = 422
+    ClientHeight = 398
     ClientWidth = 614
     Constraints.MaxHeight = 440
     Constraints.MaxWidth = 618
@@ -177,11 +186,11 @@ object FormSchedule: TFormSchedule
       AnchorSideBottom.Control = FilterGroupBox
       AnchorSideBottom.Side = asrBottom
       Left = 0
-      Height = 422
+      Height = 398
       Top = 0
       Width = 614
       HorzScrollBar.Page = 614
-      VertScrollBar.Page = 422
+      VertScrollBar.Page = 398
       Align = alLeft
       Anchors = [akTop, akLeft, akRight, akBottom]
       BorderStyle = bsNone
@@ -387,9 +396,7 @@ object FormSchedule: TFormSchedule
   end
   object SaveDialog: TSaveDialog
     Title = 'Экспорт расписания в HTML'
-    DefaultExt = '.html'
     FileName = 'Schedule'
-    Filter = 'html|*.html|txt|*.txt'
     Options = [ofOldStyleDialog, ofEnableSizing, ofViewDetail]
     left = 48
     top = 104

@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, sqldb, db, FileUtil, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, Grids, ExtCtrls, Buttons, Menus, MetaUnit, Connect, Filters,
+  StdCtrls, Grids, ExtCtrls, Buttons, Menus, comobj, MetaUnit, Connect, Filters,
   Referen, CardEdit;
 
 type
@@ -16,7 +16,8 @@ type
   { TFormSchedule }
 
   TFormSchedule = class(TForm)
-    BtnExport: TButton;
+    BtnExportHTML: TButton;
+    BtnExportExcel: TButton;
     ImageList: TImageList;
     PopUpMenuCellEdit: TMenuItem;
     PopUpMenuCellDelete: TMenuItem;
@@ -32,15 +33,13 @@ type
       FPanel: TPanel;
       FDeleteBtn, FMoreBtn, FInsertBtn: TButton;
     end;
-    TScheduleItems = record
-      Val, Name: String;
-    end;
     THeader = record
       Name: String;
       Id: Integer;
     end;
     DinArr = array of THeader;
-  procedure BtnExportClick(Sender: TObject);
+  procedure BtnExportExcelClick(Sender: TObject);
+  procedure BtnExportHTMLClick(Sender: TObject);
   procedure PopUpMenuCellDeleteClick(Sender: TObject);
   procedure PopUpMenuCellEditClick(Sender: TObject);
   published
@@ -81,7 +80,7 @@ type
     CurrentMouse: TMouseCoord;
     ControlPanelShowed: Boolean;
     DefaultFilters: array of TFilterInfo;
-    ScheduleItems: array of array of array of array of TScheduleItems;
+    ScheduleItems: array of array of array of array of String;
     IdtoRemoveOrEdit: String;
     procedure PopUpForm;
     function FillHeader(ATable: TTableInfo; var Headers: DinArr): Integer;
@@ -98,6 +97,7 @@ type
     procedure UpdateMouse(ACol, ARow: Integer);
     procedure ShowPopUpMenu(AID, X, Y: Integer);
     procedure ExportScheduleToHTML(var fo: TextFile);
+    procedure ExportScheduleToExcel(path: String);
   end;
 
 var
@@ -204,14 +204,14 @@ begin
     for j := 0 to High(ScheduleItems[aCol, aRow, i]) do begin
       if not CheckGroup.Checked[j] then Continue;
       if CheckBoxShowTitles.Checked then
-        currString := Format('%s: %s', [ScheduleItems[aCol][aRow][i][j].Name, ScheduleItems[aCol][aRow][i][j].Val])
+        currString := Format('%s: %s', [ScheduleTable.FFields[j].FCaption, ScheduleItems[aCol][aRow][i][j]])
       else
-        currString := ScheduleItems[aCol][aRow][i][j].Val;
+        currString := ScheduleItems[aCol][aRow][i][j];
       DrawGrid.Canvas.TextRect(currentRect, marginX, marginY + insideMargin + outsideMargin, currString, TextStyle);
-      insideMargin += Canvas.TextHeight(ScheduleItems[aCol][aRow][i][j].Val);
+      insideMargin += Canvas.TextHeight(ScheduleItems[aCol][aRow][i][j]);
     end;
     DrawGrid.Canvas.Brush.Color := $bbbbbb;
-    outsideMargin += Canvas.TextHeight(ScheduleItems[aCol][aRow][i][j].Val) * CountFiledsToShow;
+    outsideMargin += Canvas.TextHeight(ScheduleItems[aCol][aRow][i][j]) * CountFiledsToShow;
     DrawGrid.Canvas.Line(aRect.Left + 50, marginY + outsideMargin + 5, aRect.Right - 50, marginY + outsideMargin + 5);
     outsideMargin += 8;
   end;
@@ -237,8 +237,7 @@ begin
   for i := 0 to High(ScheduleTable.FFields) do begin
     StrCount := Length(ScheduleItems[X, Y, ItemsCount]);
     SetLength(ScheduleItems[X, Y, ItemsCount], StrCount + 1);
-    ScheduleItems[X][Y][ItemsCount][StrCount].Name := ScheduleTable.FFields[i].FCaption;
-    ScheduleItems[X][Y][ItemsCount][StrCount].Val := ScheduleSQLQuery.Fields[i].AsString;
+    ScheduleItems[X][Y][ItemsCount][StrCount] := ScheduleSQLQuery.Fields[i].AsString;
   end;
 end;
 
@@ -375,7 +374,7 @@ begin
 
   FormShift := GetClientOrigin;
   if (Button = mbRight) and (CurrentMouse.X <> 0) and (CurrentMouse.Y <> 0) and (Length(ScheduleItems[Col, Row]) <> 0) then begin
-    rowsHeight1 := Canvas.TextHeight(ScheduleItems[Col][Row][0][0].Val) * CountFiledsToShow + 8 + DrawGrid.CellRect(Col, Row).Top;
+    rowsHeight1 := Canvas.TextHeight(ScheduleItems[Col][Row][0][0]) * CountFiledsToShow + 8 + DrawGrid.CellRect(Col, Row).Top;
     if Length(ScheduleItems[Col, Row]) > 1 then
       rowsHeight2 := rowsHeight1 * 2 - DrawGrid.CellRect(Col, Row).Top - 8
     else
@@ -389,7 +388,7 @@ end;
 
 procedure TFormSchedule.ShowPopUpMenu(AID, X, Y: Integer);
 begin
-  IdtoRemoveOrEdit := ScheduleItems[CurrentMouse.X][CurrentMouse.Y][AID][0].Val;
+  IdtoRemoveOrEdit := ScheduleItems[CurrentMouse.X][CurrentMouse.Y][AID][0];
   PopupMenuCell.PopUp(X, Y);
 end;
 
@@ -452,7 +451,7 @@ begin
   answer := MessageDlg(Format('Вы действительно хотите удалить выбранные записи (%d штук)', [Length(ScheduleItems[CurrentMouse.X, CurrentMouse.Y])]), mtCustom, [mbYes, mbNo], 0);
   if answer = 6 then begin
     for i := 0 to High(ScheduleItems[CurrentMouse.X, CurrentMouse.Y]) do
-      query += Format(',%s', [ScheduleItems[CurrentMouse.X][CurrentMouse.Y][i][0].Val]);
+      query += Format(',%s', [ScheduleItems[CurrentMouse.X][CurrentMouse.Y][i][0]]);
     Delete(query, 1, 1);
     query := Format('DELETE FROM %s WHERE ID IN (%s)', [ScheduleTable.FName, query]);
     with ScheduleSQLQuery do begin
@@ -587,12 +586,23 @@ begin
   end;
   CloseFile(headerFile);
 
+  WriteLn(fo, '<fieldset><legend><strong>Активные фильтры</strong></legend><ol>');
+  WriteLn(fo, Format('<li><i>По горизонтали:</i> %s</li>', [TableH.FCaption]));
+  WriteLn(fo, Format('<li><i>По вертикали:</i> %s</li>', [TableV.FCaption]));
+  for i := 0 to High(F.FilterPanels) do
+    with F.FilterPanels[i] do
+      if FCheckBox.Checked then begin
+        WriteLn(fo, Format('<li> <i>%s %s</i> %s </li>', [FFieldsList.Items[FFieldsList.ItemIndex], FSignsList.Items[FSignsList.ItemIndex], FConstraint.Text]));
+        Inc(k);
+      end;
+
   X := DrawGrid.ColCount - 1;
   Y := DrawGrid.RowCount - 1;
 
-  for i := 0 to Y do begin
+  WriteLn(fo, '</ol></fieldset><table border = "0" cellspacing = "0" cellpadding = "0">');
+  for j := 0 to Y do begin
     Writeln(fo, '<tr valign = "top">');
-    for j := 0 to X do begin
+    for i := 0 to X do begin
       if (i = 0) xor (j = 0) then
         Write(fo, '<td class = "h">')
       else
@@ -601,19 +611,19 @@ begin
         Writeln(fo, '</td>');
         Continue;
       end;
-      if i = 0 then begin
-        Writeln(fo, HVals[j].Name + '</td>');
-        Continue;
-      end;
       if j = 0 then begin
-        Writeln(fo, VVals[i].Name + '</td>');
+        Writeln(fo, HVals[i].Name + '</td>');
         Continue;
       end;
-      for k := 0 to High(ScheduleItems[j, i]) do begin
-        for l := 1 to High(ScheduleItems[j, i, k]) do begin
-          Write(fo, '<b>' + ScheduleItems[j][i][k][l].Name + ':</b> ' + ScheduleItems[j][i][k][l].Val + '<br />');
+      if i = 0 then begin
+        Writeln(fo, VVals[j].Name + '</td>');
+        Continue;
+      end;
+      for k := 0 to High(ScheduleItems[i, j]) do begin
+        for l := 1 to High(ScheduleItems[i, j, k]) do begin
+          Write(fo, '<strong>' + ScheduleTable.FFields[l].FCaption + ':</strong> ' + ScheduleItems[i][j][k][l] + '<br />');
         end;
-        if k <> High(ScheduleItems[j, i]) then
+        if k <> High(ScheduleItems[i, j]) then
           WriteLn(fo, '<div class = "separator">&nbsp</div>');
       end;
       WriteLn(fo, '</td>');
@@ -623,11 +633,16 @@ begin
   WriteLn(fo, '</table></body></html>');
 end;
 
-procedure TFormSchedule.BtnExportClick(Sender: TObject);
+procedure TFormSchedule.BtnExportHTMLClick(Sender: TObject);
 var
   out_p: TextFile;
   path: String;
 begin
+  with SaveDialog do begin
+    FileName := 'Schedule.html';
+    Filter := 'Html-документ | *.html';
+    Title := 'Экспорт расписания в HTML';
+  end;
   if SaveDialog.Execute then begin
     path := UTF8ToSys(SaveDialog.FileName);
     AssignFile(out_p, path);
@@ -635,6 +650,73 @@ begin
     ExportScheduleToHTML(out_p);
     CloseFile(out_p);
   end;
+end;
+
+procedure TFormSchedule.ExportScheduleToExcel(path: String);
+var
+    ExcelApp: Variant;
+    i, j, X, Y, k, l: Integer;
+    s,t: String;
+begin
+  ExcelApp := CreateOleObject('Excel.Application');
+  ExcelApp.Application.EnableEvents := False;
+  ExcelApp.Workbooks.Add;
+  ExcelApp.Worksheets[1].Name := WideString(UTF8ToSys('Расписание'));
+
+  X := DrawGrid.ColCount - 1;
+  Y := DrawGrid.RowCount - 1;
+
+  for j := 0 to Y do begin
+    for i := 0 to X do begin
+      if (i = 0) and (j = 0) then Continue;
+      if (i = 0) xor (j = 0) then begin
+        ExcelApp.Cells[j + 1, i + 1].Font.Bold := True;
+        ExcelApp.Cells[j + 1, i + 1].HorizontalAlignment := 3;
+      end;
+      ExcelApp.Cells[j + 1, i + 1].VerticalAlignment := 1;
+      ExcelApp.Cells[j + 1, i + 1].ColumnWidth := 30;
+      ExcelApp.Cells[j + 1, i + 1].WrapText := True;
+      ExcelApp.Cells[j + 1, i + 1].Borders.LineStyle := 1;
+      if j = 0 then begin
+        ExcelApp.Cells[j + 1, i + 1] :=  WideString(UTF8ToSys(HVals[i].Name));
+        Continue;
+      end;
+      if i = 0 then begin
+        ExcelApp.Cells[j + 1, i + 1] :=  WideString(UTF8ToSys(VVals[j].Name));
+        Continue;
+      end;
+      s := '';
+      for k := 0 to High(ScheduleItems[i, j]) do begin
+        for l := 1 to High(ScheduleItems[i, j, k]) do begin
+          if not CheckGroup.Checked[l] then Continue;
+          if CheckBoxShowTitles.Checked then
+            s += Format('%s: %s' + PChar(#10), [ScheduleTable.FFields[l].FCaption ,ScheduleItems[i][j][k][l]])
+          else
+            s += Format('%s' + PChar(#10), [ScheduleItems[i][j][k][l]]);
+        end;
+        s += '-----------------------------------------' + PChar(#10);
+      end;
+      ExcelApp.Cells[j + 1, i + 1] :=  WideString(UTF8ToSys(s));
+    end;
+  end;
+
+  ExcelApp.DisplayAlerts := False;
+  ExcelApp.Worksheets[1].SaveAs(WideString(UTF8ToSys(path)));
+  ExcelApp.Application.Quit;
+  FreeAndNil(ExcelApp);
+end;
+
+procedure TFormSchedule.BtnExportExcelClick(Sender: TObject);
+var
+  path: String;
+begin
+  with SaveDialog do begin
+    FileName := 'Schedule.xlsx';
+    Filter := 'Документ Excel | *.xlsx';
+    Title := 'Экспорт расписания в Excel';
+  end;
+  if SaveDialog.Execute then
+    ExportScheduleToExcel(SaveDialog.FileName);
 end;
 
 {$R *.lfm}
