@@ -70,7 +70,7 @@ begin
     DBGrid.Columns[i].Title.Caption := ThisTable.FFields[i].FCaption + FSortIcon;
     DBGrid.Columns[i].Width := ThisTable.FFields[i].FWidth * 10 + 5;
   end;
-  DBGrid.Columns[0].Visible := False;
+  //DBGrid.Columns[0].Visible := False;
 end;
 
 procedure TReferenForm.PopupForm(ATable: TTableInfo; AFilterInfo: TFilterInfoArray);
