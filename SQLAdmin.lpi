@@ -41,7 +41,7 @@
         <PackageName Value="LCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="10">
       <Unit0>
         <Filename Value="SQLAdmin.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -97,6 +97,21 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Filters"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="conflictstree.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="ConflictsTreeForm"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="ConflictsTree"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="conflictsmeta.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="ConflictsModule"/>
+        <ResourceBaseClass Value="DataModule"/>
+        <UnitName Value="ConflictsMeta"/>
+      </Unit9>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

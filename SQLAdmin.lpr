@@ -7,7 +7,8 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, MainUnit, Connect, Referen, MetaUnit, CardEdit, Schedule, Filters;
+  Forms, MainUnit, Connect, Referen, MetaUnit, CardEdit, Schedule, Filters,
+  ConflictsTree, ConflictsMeta;
 
 {$R *.res}
 
@@ -18,6 +19,8 @@ begin
   Application.CreateForm(TConnectModule, ConnectModule);
   Application.CreateForm(TMainForm, MainForm);
   Application.CreateForm(TReferenForm, ReferenForm);
+  Application.CreateForm(TConflictsTreeForm, ConflictsTreeForm);
+  Application.CreateForm(TConflictsModule, ConflictsModule);
   //Application.CreateForm(TFormSchedule, FormSchedule);
   Application.Run;
 end.
