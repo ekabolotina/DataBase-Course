@@ -76,8 +76,6 @@ end;
 
 procedure TReferenForm.PopupForm(ATable: TTableInfo; AFilterType: Integer = 0;
       AFilterInfo: TFilterInfoArray = nil);
-var
-  i: Integer;
 begin
   ThisTable := ATable;
   DeleteConst := 'ID <> 0';
@@ -110,8 +108,6 @@ begin
 end;
 
 procedure TReferenForm.DBGridTitleClick(Column: TColumn);
-var
-  M: TMeta;
 begin
   if SortIndex <> Column.Index then
     SortStatus[SortIndex] := NONE;
@@ -138,33 +134,22 @@ begin
   end;
 
 procedure TReferenForm.BtnInsertClick(Sender: TObject);
-var
-  tmpArr: array of Integer;
-  i: Integer;
 begin
-  SetLength(tmpArr, Length(ThisTable.FFields));
-  for i := 0 to High(tmpArr) do
-    tmpArr[i] := -1;
-  TCardEditForm.ShowEditor(ThisTable, 0, False, @ShowTable, tmpArr);
+  TCardEditForm.ShowEditor(ThisTable, 0, False, @ShowTable);
 end;
 
 procedure TReferenForm.BtnEditClick(Sender: TObject);
 var
-  forEdit, i: Integer;
-  tmpArr: array of Integer;
+  forEdit: Integer;
 begin
-  SetLength(tmpArr, Length(ThisTable.FFields));
-  for i := 0 to High(tmpArr) do
-    tmpArr[i] := -1;
   forEdit := Datasource.DataSet.FieldByName('ID').AsInteger;
   if forEdit = 0 then Exit;
-  TCardEditForm.ShowEditor(ThisTable, forEdit, True, @ShowTable, tmpArr);
+  TCardEditForm.ShowEditor(ThisTable, forEdit, True, @ShowTable);
 end;
 
 procedure TReferenForm.BtnRemoveClick(Sender: TObject);
 var
   forRemove, answer: Integer;
-  M: TMeta;
 begin
   forRemove := Datasource.DataSet.FieldByName('ID').AsInteger;
   if forRemove = 0 then Exit;
