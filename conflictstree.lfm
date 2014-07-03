@@ -1,0 +1,28 @@
+object ConflictsTreeForm: TConflictsTreeForm
+  Left = 959
+  Height = 350
+  Top = 128
+  Width = 350
+  Caption = 'Дерево конфликтов расписания'
+  ClientHeight = 350
+  ClientWidth = 350
+  Constraints.MinHeight = 350
+  Constraints.MinWidth = 350
+  OnShow = FormShow
+  Position = poScreenCenter
+  LCLVersion = '1.0.12.0'
+  object TreeView: TTreeView
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 0
+    Height = 350
+    Top = 0
+    Width = 350
+    Align = alTop
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    DefaultItemHeight = 18
+    ReadOnly = True
+    TabOrder = 0
+    Options = [tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
+  end
+end
