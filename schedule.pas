@@ -23,7 +23,6 @@ type
   const
     CellSize = 200;
   type
-    DinArr = array of String;
     TMouseCoord = record
       X, Y: Integer;
     end;
@@ -34,6 +33,11 @@ type
     TScheduleItems = record
       Val, Name: String;
     end;
+    THeader = record
+      Name: String;
+      Id: Integer;
+    end;
+    DinArr = array of THeader;
   procedure PopUpMenuCellDeleteClick(Sender: TObject);
   procedure PopUpMenuCellEditClick(Sender: TObject);
   published
@@ -63,10 +67,11 @@ type
     procedure DrawGridMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure RomoveClick(Sender: TObject);
+    procedure InsertClick(Sender: TObject);
   public
     ScheduleTable, TableH, TableV: TTableInfo;
     TablesList: array of String;
-    HVals, VVals: array of String;
+    HVals, VVals: array of THeader;
     FieldH, FieldV: Integer;
     F: TFilters;
     ControlPanelFull: TControlPanelFull;
@@ -177,11 +182,11 @@ begin
   currentRect := Rect(aRect.Left + 4, aRect.Top, aRect.Right, aRect.Bottom);
 
   if (aRow = 0) and (aCol <> 0) then begin
-    DrawGrid.Canvas.TextRect(currentRect, marginX, marginY, HVals[aCol], TextStyle);
+    DrawGrid.Canvas.TextRect(currentRect, marginX, marginY, HVals[aCol].Name, TextStyle);
     Exit;
   end;
   if (aRow <> 0) and (aCol = 0)  then begin
-    DrawGrid.Canvas.TextRect(currentRect, marginX, marginY, VVals[aRow], TextStyle);
+    DrawGrid.Canvas.TextRect(currentRect, marginX, marginY, VVals[aRow].Name, TextStyle);
     Exit;
   end;
 
@@ -241,11 +246,12 @@ begin
   with ScheduleSQLQuery do begin
     Close;
     SQL.Clear;
-    SQL.Text := Format('SELECT Name FROM %s ORDER BY %s', [ATable.FName, ATable.FSortField]);
+    SQL.Text := Format('SELECT Id, Name FROM %s ORDER BY %s', [ATable.FName, ATable.FSortField]);
     Open;
     while not EOF do begin
       SetLength(Headers, Length(Headers)+1);
-      Headers[i] := FieldByName('Name').AsString;
+      Headers[i].Name:= FieldByName('Name').AsString;
+      Headers[i].Id := FieldByName('Id').AsInteger;
       Inc(i);
       Next;
     end;
@@ -278,7 +284,7 @@ begin
     j := 1;
     while not EOF do begin
       if (i > X) and (j > Y) then Break;
-      if (Fields[AFieldH].AsString = HVals[i]) and (Fields[AFieldV].AsString = VVals[j]) then begin
+      if (Fields[AFieldH].AsString = HVals[i].Name) and (Fields[AFieldV].AsString = VVals[j].Name) then begin
         FillCell(i, j);
         Next;
         Continue;
@@ -402,14 +408,16 @@ begin
 
     F.CollectDefFilters(DefaultFilters);
     SetLength(DefaultFilters, Length(DefaultFilters)+2);
-    DefaultFilters[High(DefaultFilters)-1] := TFilterInfo.Create(FieldH - 1, 2, HVals[Col], True);
-    DefaultFilters[High(DefaultFilters)] := TFilterInfo.Create(FieldV - 1, 2, VVals[Row], True);
+    DefaultFilters[High(DefaultFilters)-1] := TFilterInfo.Create(FieldH - 1, 2, HVals[Col].Name, True);
+    DefaultFilters[High(DefaultFilters)] := TFilterInfo.Create(FieldV - 1, 2, VVals[Row].Name, True);
 
 end;
 
 procedure TFormSchedule.PopUpMenuCellEditClick(Sender: TObject);
+var
+  tmpArr: array of Integer;
 begin
-  TCardEditForm.ShowEditor(ScheduleTable, StrToInt(IdtoRemoveOrEdit), True, @LoadGrid);
+  TCardEditForm.ShowEditor(ScheduleTable, StrToInt(IdtoRemoveOrEdit), True, @LoadGrid, tmpArr);
 end;
 
 procedure TFormSchedule.PopUpMenuCellDeleteClick(Sender: TObject);
@@ -453,6 +461,19 @@ begin
   end;
 end;
 
+procedure TFormSchedule.InsertClick(Sender: TObject);
+var
+  tmpArr: array of Integer;
+  i: Integer;
+begin
+  SetLength(tmpArr, Length(ScheduleTable.FFields));
+  for i := 0 to High(tmpArr) do
+    tmpArr[i] := -1;
+  tmpArr[FieldH] := HVals[CurrentMouse.x].Id;
+  tmpArr[FieldV] := VVals[CurrentMouse.y].Id;
+  TCardEditForm.ShowEditor(ScheduleTable, 0, False, @LoadGrid, tmpArr);
+end;
+
 procedure TFormSchedule.ShowControlPanel(ACol, ARow: Integer);
 begin
   if (ACol <> 0) and (ARow <> 0) then begin
@@ -491,7 +512,7 @@ begin
         Top := 3;
         if AFull then Left := 0 else Left := 70;
         Caption := 'Вставить';
-        OnClick := @RomoveClick;
+        OnClick := @InsertClick;
         Parent := FPanel;
       end;
       if not AFull then Exit;
