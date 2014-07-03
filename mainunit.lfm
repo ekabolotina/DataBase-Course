@@ -1,12 +1,12 @@
 object MainForm: TMainForm
-  Left = 973
-  Height = 61
-  Top = 487
-  Width = 374
+  Left = 875
+  Height = 67
+  Top = 172
+  Width = 365
   BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'SQL Schedule'
-  ClientHeight = 41
-  ClientWidth = 374
+  ClientHeight = 0
+  ClientWidth = 0
   Menu = MainMenu
   OnCreate = FormCreate
   OnShow = FormShow

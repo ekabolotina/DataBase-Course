@@ -5,8 +5,8 @@ unit MainUnit;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, Menus,
-  Connect, Referen, MetaUnit, StdCtrls, Schedule;
+  Classes, SysUtils, sqldb, db, FileUtil, Forms, Controls, Graphics, Dialogs,
+  Menus, Connect, Referen, MetaUnit, StdCtrls, DbCtrls, Schedule;
 
 type
 
