@@ -18,7 +18,7 @@ begin
   Application.CreateForm(TMainForm, MainForm);
   Application.CreateForm(TConnectModule, ConnectModule);
   Application.CreateForm(TReferenForm, ReferenForm);
-  Application.CreateForm(TFormSchedule, FormSchedule);
+  //Application.CreateForm(TFormSchedule, FormSchedule);
   Application.Run;
 end.
 
