@@ -6,12 +6,10 @@ interface
 
 uses
   Classes, SysUtils, sqldb, db, FileUtil, Forms, Controls, Graphics, Dialogs,
-  StdCtrls, Grids, ExtCtrls, Buttons, Menus, comobj, MetaUnit, Connect, Filters,
-  Referen, CardEdit, ConflictsMeta, ConflictsTree;
+  StdCtrls, Grids, ExtCtrls, Buttons, Menus, MetaUnit, Connect, Filters,
+  Referen, CardEdit, ConflictsMeta, ConflictsTree, ExportUnit;
 
 type
-
-
 
   { TFormSchedule }
 
@@ -35,11 +33,7 @@ type
       FPanel: TPanel;
       FDeleteBtn, FMoreBtn, FInsertBtn: TButton;
     end;
-    THeader = record
-      Name: String;
-      Id: Integer;
-    end;
-    DinArr = array of THeader;
+    THeaderArray = array of THeader;
   procedure BtnExportExcelClick(Sender: TObject);
   procedure BtnExportHTMLClick(Sender: TObject);
   procedure ConflictsTreeBtnClick(Sender: TObject);
@@ -82,11 +76,11 @@ type
     CurrentMouse: TMouseCoord;
     ControlPanelShowed: Boolean;
     DefaultFilters: array of TFilterInfo;
-    ScheduleItems: array of array of array of array of String;
+    ScheduleItems: T4DArray;
     IdtoRemoveOrEdit: String;
     ConflictInfo: TPoint;
     procedure PopUpForm;
-    function FillHeader(ATable: TTableInfo; var Headers: DinArr): Integer;
+    function FillHeader(ATable: TTableInfo; var Headers: THeaderArray): Integer;
     procedure FillItems(AFieldH, AFieldV: Integer);
     procedure FillCheckBoxGroup(H, V: Integer);
     procedure BuildCheckBoxGroup;
@@ -99,8 +93,6 @@ type
     procedure RemoveControlPanel(ACol, ARow: Integer);
     procedure UpdateMouse(ACol, ARow: Integer);
     procedure ShowPopUpMenu(AID, X, Y: Integer);
-    procedure ExportScheduleToHTML(var fo: TextFile);
-    procedure ExportScheduleToExcel(path: String);
   end;
 
 var
@@ -252,7 +244,7 @@ begin
   end;
 end;
 
-function TFormSchedule.FillHeader(ATable: TTableInfo; var Headers: DinArr): Integer;
+function TFormSchedule.FillHeader(ATable: TTableInfo; var Headers: THeaderArray): Integer;
 var
   i: Integer;
 begin
@@ -287,7 +279,6 @@ begin
     Close;
     SQL.Clear;
     SQL.Text := TMeta.MakeQuery(ScheduleTable, F.MakeQuery) + ' ORDER BY ' + TableV.FName + '.' + TableV.FSortField + ',' + TableH.FName + '.' + TableH.FSortField;
-    ShowMessage(SQL.Text);
     for i := 0 to High(F.FilterPanels) do begin
       with F.FilterPanels[i] do begin
         if not FCheckBox.Checked then Continue;
@@ -578,74 +569,8 @@ begin
   FormSchedule.ShowModal;
 end;
 
-procedure TFormSchedule.ExportScheduleToHTML(var fo: TextFile);
-var
-  X, Y, i, j, k, l: Integer;
-  headerFile: TextFile;
-  tmpStr: String;
-begin
-  AssignFile(headerFile, 'common\header.txt');
-  Reset(headerFile);
-  while not EOF(headerFile) do begin
-    ReadLn(headerFile, tmpStr);
-    WriteLn(fo, tmpStr);
-  end;
-  CloseFile(headerFile);
-  k := 0;
-  WriteLn(fo, '<fieldset><legend><strong>Активные фильтры</strong></legend><ol>');
-  WriteLn(fo, Format('<li><i>По горизонтали:</i> %s</li>', [TableH.FCaption]));
-  WriteLn(fo, Format('<li><i>По вертикали:</i> %s</li>', [TableV.FCaption]));
-  for i := 0 to High(F.FilterPanels) do
-    with F.FilterPanels[i] do
-      if FCheckBox.Checked then begin
-        WriteLn(fo, Format('<li> <i>%s %s</i> %s </li>', [FFieldsList.Items[FFieldsList.ItemIndex], FSignsList.Items[FSignsList.ItemIndex], FConstraint.Text]));
-        Inc(k);
-      end;
-
-  X := DrawGrid.ColCount - 1;
-  Y := DrawGrid.RowCount - 1;
-
-  WriteLn(fo, '</ol></fieldset><table border = "0" cellspacing = "0" cellpadding = "0">');
-  for j := 0 to Y do begin
-    Writeln(fo, '<tr valign = "top">');
-    for i := 0 to X do begin
-      if (i = 0) xor (j = 0) then
-        Write(fo, '<td class = "h">')
-      else
-        Write(fo, '<td>');
-      if (i = 0) and (j = 0) then begin
-        Writeln(fo, '</td>');
-        Continue;
-      end;
-      if j = 0 then begin
-        Writeln(fo, HVals[i].Name + '</td>');
-        Continue;
-      end;
-      if i = 0 then begin
-        Writeln(fo, VVals[j].Name + '</td>');
-        Continue;
-      end;
-      for k := 0 to High(ScheduleItems[i, j]) do begin
-        if ConflictsModule.IsInConflict(StrToInt(ScheduleItems[i][j][k][0])).x > -1 then
-          Write(fo, '<div class = "conflict">');
-        for l := 1 to High(ScheduleItems[i, j, k]) do begin
-          Write(fo, '<strong>' + ScheduleTable.FFields[l].FCaption + ':</strong> ' + ScheduleItems[i][j][k][l] + '<br />');
-        end;
-        if k <> High(ScheduleItems[i, j]) then
-          WriteLn(fo, '<div class = "separator">&nbsp</div>');
-        if ConflictsModule.IsInConflict(StrToInt(ScheduleItems[i][j][k][0])).x > -1 then
-          Write(fo, '</div>');
-      end;
-      WriteLn(fo, '</td>');
-    end;
-    Writeln(fo, '</tr>');
-  end;
-  WriteLn(fo, '</table></body></html>');
-end;
-
 procedure TFormSchedule.BtnExportHTMLClick(Sender: TObject);
 var
-  out_p: TextFile;
   path: String;
 begin
   with SaveDialog do begin
@@ -655,79 +580,9 @@ begin
   end;
   if SaveDialog.Execute then begin
     path := UTF8ToSys(SaveDialog.FileName);
-    AssignFile(out_p, path);
-    Rewrite(out_p);
-    ExportScheduleToHTML(out_p);
-    CloseFile(out_p);
+    TExport.ExportScheduleToHTML(TableH.FCaption, TableV.FCaption, HVals, VVals,
+    ScheduleTable, ScheduleItems, F, CheckGroup, CheckBoxShowTitles.Checked, path);
   end;
-end;
-
-procedure TFormSchedule.ExportScheduleToExcel(path: String);
-var
-    ExcelApp: Variant;
-    i, j, X, Y, k, l: Integer;
-    s: String;
-begin
-  ExcelApp := CreateOleObject('Excel.Application');
-  ExcelApp.Application.EnableEvents := False;
-  ExcelApp.Workbooks.Add;
-  ExcelApp.Worksheets[1].Name := WideString(UTF8ToSys('Расписание'));
-
-  X := DrawGrid.ColCount - 1;
-  Y := DrawGrid.RowCount - 1;
-
-  for j := 0 to Y do begin
-    for i := 0 to X do begin
-      if (i = 0) and (j = 0) then Continue;
-      if (i = 0) xor (j = 0) then begin
-        ExcelApp.Cells[j + 1, i + 1].Font.Bold := True;
-        ExcelApp.Cells[j + 1, i + 1].HorizontalAlignment := 3;
-      end;
-      ExcelApp.Cells[j + 1, i + 1].VerticalAlignment := 1;
-      ExcelApp.Cells[j + 1, i + 1].ColumnWidth := 30;
-      ExcelApp.Cells[j + 1, i + 1].WrapText := True;
-      ExcelApp.Cells[j + 1, i + 1].Borders.LineStyle := 1;
-      if j = 0 then begin
-        ExcelApp.Cells[j + 1, i + 1] :=  WideString(UTF8ToSys(HVals[i].Name));
-        Continue;
-      end;
-      if i = 0 then begin
-        ExcelApp.Cells[j + 1, i + 1] :=  WideString(UTF8ToSys(VVals[j].Name));
-        Continue;
-      end;
-      s := '';
-      for k := 0 to High(ScheduleItems[i, j]) do begin
-        for l := 1 to High(ScheduleItems[i, j, k]) do begin
-          if not CheckGroup.Checked[l] then Continue;
-          if CheckBoxShowTitles.Checked then
-            s += Format('%s: %s' + PChar(#10), [ScheduleTable.FFields[l].FCaption ,ScheduleItems[i][j][k][l]])
-          else
-            s += Format('%s' + PChar(#10), [ScheduleItems[i][j][k][l]]);
-        end;
-        s += '-----------------------------------------' + PChar(#10);
-      end;
-      ExcelApp.Cells[j + 1, i + 1] :=  WideString(UTF8ToSys(s));
-    end;
-  end;
-
-  ExcelApp.Cells[Y + 3, 1].Font.Bold := True;
-  ExcelApp.Cells[Y + 3, 1].WrapText := True;
-  ExcelApp.Cells[Y + 3, 1].HorizontalAlignment := 3;
-  ExcelApp.Cells[Y + 3, 1] := WideString(UTF8ToSys('Активные фильтры'));
-  ExcelApp.Cells[Y + 4, 1] := WideString(UTF8ToSys(Format('1. По горизонтали: %s', [TableH.FCaption])));
-  ExcelApp.Cells[Y + 5, 1] := WideString(UTF8ToSys(Format('2. По вертикали: %s', [TableV.FCaption])));
-  k := 3;
-  for i := 0 to High(F.FilterPanels) do
-    with F.FilterPanels[i] do
-      if FCheckBox.Checked then begin
-        ExcelApp.Cells[Y + 6 + i, 1] := WideString(UTF8ToSys(Format('%d. %s %s %s', [k, FFieldsList.Items[FFieldsList.ItemIndex], FSignsList.Items[FSignsList.ItemIndex], FConstraint.Text])));
-        Inc(k);
-      end;
-
-  ExcelApp.DisplayAlerts := False;
-  ExcelApp.Worksheets[1].SaveAs(WideString(UTF8ToSys(path)));
-  ExcelApp.Application.Quit;
-  FreeAndNil(ExcelApp);
 end;
 
 procedure TFormSchedule.BtnExportExcelClick(Sender: TObject);
@@ -738,7 +593,9 @@ begin
     Title := 'Экспорт расписания в Excel';
   end;
   if SaveDialog.Execute then
-    ExportScheduleToExcel(SaveDialog.FileName);
+    TExport.ExportScheduleToExcel(TableH.FCaption, TableV.FCaption, HVals, VVals,
+    ScheduleTable, ScheduleItems, F, CheckGroup, CheckBoxShowTitles.Checked,
+    SaveDialog.FileName);
 end;
 
 procedure TFormSchedule.ConflictsTreeBtnClick(Sender: TObject);

@@ -4,8 +4,8 @@ object FormSchedule: TFormSchedule
   Top = 54
   Width = 1292
   Caption = 'Срезы расписания'
-  ClientHeight = 600
-  ClientWidth = 1292
+  ClientHeight = 0
+  ClientWidth = 0
   Constraints.MinHeight = 600
   Constraints.MinWidth = 1292
   OnShow = FormShow
@@ -478,7 +478,7 @@ object FormSchedule: TFormSchedule
   object SaveDialog: TSaveDialog
     Title = 'Экспорт расписания в HTML'
     FileName = 'Schedule'
-    Options = [ofOldStyleDialog, ofEnableSizing, ofViewDetail]
+    Options = [ofOverwritePrompt, ofOldStyleDialog, ofEnableSizing, ofViewDetail]
     left = 48
     top = 104
   end
