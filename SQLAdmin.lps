@@ -51,11 +51,10 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Referen"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="4"/>
         <WindowIndex Value="0"/>
         <TopLine Value="46"/>
-        <CursorPos X="1" Y="58"/>
+        <CursorPos X="20" Y="55"/>
         <UsageCount Value="201"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -80,8 +79,8 @@
         <UnitName Value="CardEdit"/>
         <EditorIndex Value="3"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="30"/>
-        <CursorPos X="31" Y="69"/>
+        <TopLine Value="1"/>
+        <CursorPos X="30" Y="51"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -93,11 +92,13 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Schedule"/>
+        <IsVisibleTab Value="True"/>
         <EditorIndex Value="6"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="549"/>
-        <CursorPos X="31" Y="479"/>
-        <UsageCount Value="181"/>
+        <TopLine Value="596"/>
+        <CursorPos X="29" Y="612"/>
+        <FoldState Value=" T3jL094 pjFjY0F151V"/>
+        <UsageCount Value="194"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit6>
@@ -107,9 +108,9 @@
         <UnitName Value="Filters"/>
         <EditorIndex Value="5"/>
         <WindowIndex Value="0"/>
-        <TopLine Value="55"/>
-        <CursorPos X="39" Y="55"/>
-        <UsageCount Value="152"/>
+        <TopLine Value="254"/>
+        <CursorPos X="26" Y="268"/>
+        <UsageCount Value="165"/>
         <Loaded Value="True"/>
       </Unit7>
       <Unit8>
@@ -121,7 +122,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="3"/>
         <CursorPos X="17" Y="24"/>
-        <UsageCount Value="23"/>
+        <UsageCount Value="22"/>
       </Unit8>
       <Unit9>
         <Filename Value="cardinsert.pas"/>
@@ -132,7 +133,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="143"/>
         <CursorPos X="37" Y="60"/>
-        <UsageCount Value="68"/>
+        <UsageCount Value="67"/>
       </Unit9>
       <Unit10>
         <Filename Value="carddelete.pas"/>
@@ -143,14 +144,14 @@
         <WindowIndex Value="0"/>
         <TopLine Value="17"/>
         <CursorPos X="21" Y="33"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="9"/>
       </Unit10>
       <Unit11>
         <Filename Value="C:\lazarus\lcl\include\control.inc"/>
         <WindowIndex Value="0"/>
         <TopLine Value="2100"/>
         <CursorPos X="1" Y="2111"/>
-        <UsageCount Value="7"/>
+        <UsageCount Value="6"/>
       </Unit11>
       <Unit12>
         <Filename Value="C:\lazarus\lcl\grids.pas"/>
@@ -158,28 +159,28 @@
         <WindowIndex Value="0"/>
         <TopLine Value="8657"/>
         <CursorPos X="1" Y="8675"/>
-        <UsageCount Value="5"/>
+        <UsageCount Value="4"/>
       </Unit12>
       <Unit13>
         <Filename Value="C:\lazarus\lcl\include\customcombobox.inc"/>
         <WindowIndex Value="0"/>
         <TopLine Value="909"/>
         <CursorPos X="1" Y="921"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="7"/>
       </Unit13>
       <Unit14>
         <Filename Value="C:\lazarus\lcl\include\customform.inc"/>
         <WindowIndex Value="0"/>
         <TopLine Value="2058"/>
         <CursorPos X="1" Y="2070"/>
-        <UsageCount Value="3"/>
+        <UsageCount Value="2"/>
       </Unit14>
       <Unit15>
         <Filename Value="C:\lazarus\fpc\2.6.2\source\rtl\win\wininc\struct.inc"/>
         <WindowIndex Value="0"/>
         <TopLine Value="221"/>
         <CursorPos X="6" Y="233"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="7"/>
       </Unit15>
       <Unit16>
         <Filename Value="C:\lazarus\lcl\controls.pp"/>
@@ -187,14 +188,14 @@
         <WindowIndex Value="0"/>
         <TopLine Value="2849"/>
         <CursorPos X="15" Y="2024"/>
-        <UsageCount Value="5"/>
+        <UsageCount Value="4"/>
       </Unit16>
       <Unit17>
         <Filename Value="C:\lazarus\lcl\include\dblookupcombobox.inc"/>
         <WindowIndex Value="0"/>
         <TopLine Value="106"/>
         <CursorPos X="1" Y="118"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="7"/>
       </Unit17>
       <Unit18>
         <Filename Value="C:\lazarus\fpc\2.6.2\source\packages\fcl-db\src\base\db.pas"/>
@@ -202,7 +203,7 @@
         <WindowIndex Value="0"/>
         <TopLine Value="384"/>
         <CursorPos X="20" Y="395"/>
-        <UsageCount Value="9"/>
+        <UsageCount Value="8"/>
       </Unit18>
     </Units>
     <General>
@@ -211,123 +212,123 @@
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
         <Filename Value="schedule.pas"/>
-        <Caret Line="254" Column="1" TopLine="222"/>
+        <Caret Line="474" Column="44" TopLine="466"/>
       </Position1>
       <Position2>
-        <Filename Value="schedule.pas"/>
-        <Caret Line="255" Column="1" TopLine="222"/>
+        <Filename Value="cardedit.pas"/>
+        <Caret Line="203" Column="64" TopLine="193"/>
       </Position2>
       <Position3>
         <Filename Value="schedule.pas"/>
-        <Caret Line="254" Column="1" TopLine="222"/>
+        <Caret Line="484" Column="6" TopLine="481"/>
       </Position3>
       <Position4>
         <Filename Value="schedule.pas"/>
-        <Caret Line="255" Column="1" TopLine="222"/>
+        <Caret Line="491" Column="6" TopLine="488"/>
       </Position4>
       <Position5>
         <Filename Value="schedule.pas"/>
-        <Caret Line="254" Column="1" TopLine="222"/>
+        <Caret Line="583" Column="23" TopLine="560"/>
       </Position5>
       <Position6>
         <Filename Value="schedule.pas"/>
-        <Caret Line="255" Column="1" TopLine="222"/>
+        <Caret Line="589" Column="1" TopLine="572"/>
       </Position6>
       <Position7>
         <Filename Value="schedule.pas"/>
-        <Caret Line="254" Column="1" TopLine="222"/>
+        <Caret Line="582" Column="18" TopLine="560"/>
       </Position7>
       <Position8>
         <Filename Value="schedule.pas"/>
-        <Caret Line="255" Column="1" TopLine="222"/>
+        <Caret Line="579" Column="28" TopLine="565"/>
       </Position8>
       <Position9>
         <Filename Value="schedule.pas"/>
-        <Caret Line="254" Column="1" TopLine="222"/>
+        <Caret Line="578" Column="17" TopLine="565"/>
       </Position9>
       <Position10>
         <Filename Value="schedule.pas"/>
-        <Caret Line="255" Column="1" TopLine="222"/>
+        <Caret Line="579" Column="17" TopLine="565"/>
       </Position10>
       <Position11>
         <Filename Value="schedule.pas"/>
-        <Caret Line="254" Column="1" TopLine="222"/>
+        <Caret Line="578" Column="31" TopLine="565"/>
       </Position11>
       <Position12>
         <Filename Value="schedule.pas"/>
-        <Caret Line="255" Column="1" TopLine="222"/>
+        <Caret Line="579" Column="36" TopLine="565"/>
       </Position12>
       <Position13>
         <Filename Value="schedule.pas"/>
-        <Caret Line="254" Column="1" TopLine="222"/>
+        <Caret Line="576" Column="18" TopLine="566"/>
       </Position13>
       <Position14>
         <Filename Value="schedule.pas"/>
-        <Caret Line="255" Column="1" TopLine="222"/>
+        <Caret Line="587" Column="20" TopLine="564"/>
       </Position14>
       <Position15>
         <Filename Value="schedule.pas"/>
-        <Caret Line="254" Column="1" TopLine="222"/>
+        <Caret Line="576" Column="14" TopLine="564"/>
       </Position15>
       <Position16>
         <Filename Value="schedule.pas"/>
-        <Caret Line="255" Column="1" TopLine="222"/>
+        <Caret Line="581" Column="20" TopLine="564"/>
       </Position16>
       <Position17>
         <Filename Value="schedule.pas"/>
-        <Caret Line="254" Column="1" TopLine="222"/>
+        <Caret Line="580" Column="50" TopLine="564"/>
       </Position17>
       <Position18>
         <Filename Value="schedule.pas"/>
-        <Caret Line="255" Column="1" TopLine="222"/>
+        <Caret Line="583" Column="22" TopLine="564"/>
       </Position18>
       <Position19>
         <Filename Value="schedule.pas"/>
-        <Caret Line="254" Column="1" TopLine="222"/>
+        <Caret Line="582" Column="1" TopLine="564"/>
       </Position19>
       <Position20>
         <Filename Value="schedule.pas"/>
-        <Caret Line="255" Column="1" TopLine="222"/>
+        <Caret Line="581" Column="27" TopLine="564"/>
       </Position20>
       <Position21>
         <Filename Value="schedule.pas"/>
-        <Caret Line="254" Column="1" TopLine="222"/>
+        <Caret Line="580" Column="23" TopLine="564"/>
       </Position21>
       <Position22>
         <Filename Value="schedule.pas"/>
-        <Caret Line="255" Column="1" TopLine="222"/>
+        <Caret Line="605" Column="26" TopLine="587"/>
       </Position22>
       <Position23>
         <Filename Value="schedule.pas"/>
-        <Caret Line="474" Column="31" TopLine="458"/>
+        <Caret Line="592" Column="26" TopLine="580"/>
       </Position23>
       <Position24>
         <Filename Value="schedule.pas"/>
-        <Caret Line="475" Column="54" TopLine="458"/>
+        <Caret Line="584" Column="18" TopLine="579"/>
       </Position24>
       <Position25>
         <Filename Value="schedule.pas"/>
-        <Caret Line="474" Column="15" TopLine="458"/>
+        <Caret Line="593" Column="1" TopLine="579"/>
       </Position25>
       <Position26>
         <Filename Value="schedule.pas"/>
-        <Caret Line="430" Column="75" TopLine="418"/>
+        <Caret Line="597" Column="1" TopLine="579"/>
       </Position26>
       <Position27>
         <Filename Value="schedule.pas"/>
-        <Caret Line="428" Column="135" TopLine="418"/>
+        <Caret Line="607" Column="12" TopLine="593"/>
       </Position27>
       <Position28>
         <Filename Value="schedule.pas"/>
-        <Caret Line="420" Column="52" TopLine="415"/>
+        <Caret Line="587" Column="29" TopLine="583"/>
       </Position28>
       <Position29>
         <Filename Value="schedule.pas"/>
-        <Caret Line="474" Column="44" TopLine="466"/>
+        <Caret Line="589" Column="34" TopLine="578"/>
       </Position29>
       <Position30>
-        <Filename Value="cardedit.pas"/>
-        <Caret Line="203" Column="64" TopLine="193"/>
+        <Filename Value="schedule.pas"/>
+        <Caret Line="605" Column="27" TopLine="597"/>
       </Position30>
     </JumpHistory>
   </ProjectSession>
