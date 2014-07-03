@@ -1,0 +1,15 @@
+object ConflictsModule: TConflictsModule
+  OldCreateOrder = False
+  Height = 98
+  HorizontalOffset = 850
+  VerticalOffset = 201
+  Width = 337
+  object ConflictsSQLQuery: TSQLQuery
+    FieldDefs = <>
+    Database = ConnectModule.IBConnection
+    Transaction = ConnectModule.SQLTransaction
+    Params = <>
+    left = 163
+    top = 46
+  end
+end
