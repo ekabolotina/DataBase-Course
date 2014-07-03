@@ -1,0 +1,8 @@
+object FormMore: TFormMore
+  Left = 1010
+  Height = 240
+  Top = 127
+  Width = 320
+  Caption = 'Подробнее'
+  LCLVersion = '1.0.12.0'
+end
