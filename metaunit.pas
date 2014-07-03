@@ -22,13 +22,14 @@ type
   TTableInfo = class
   public
     FName, FCaption, FSequence, FSortField: String;
+    FIsReferen: Boolean;
     FFields: array of TFieldInfo;
-    constructor Create(AName, ACaption, ASequence, ASortField: String; AFields: array of TFieldInfo);
+    constructor Create(AName, ACaption, ASequence, ASortField: String; AIsReferen: Boolean; AFields: array of TFieldInfo);
   end;
 
   TMeta = class
   public
-    procedure AddTable(AName, ACaption, ASequence, ASortField: String; AFields: array of TFieldInfo);
+    procedure AddTable(AName, ACaption, ASequence, ASortField: String; AIsReferen: Boolean; AFields: array of TFieldInfo);
     procedure AddTable(ATable: TTableInfo);
     class function MakeQuery(ATable: TTableInfo; AConstrains: string = ''): String;
     class function GetTableByName(AName: String): TTableInfo;
@@ -62,7 +63,7 @@ begin
   FForeignKeyRow := AForeignKeyRow;
 end;
 
-constructor TTableInfo.Create(AName, ACaption, ASequence, ASortField: String; AFields: array of TFieldInfo);
+constructor TTableInfo.Create(AName, ACaption, ASequence, ASortField: String; AIsReferen: Boolean; AFields: array of TFieldInfo);
 var
   i: Integer;
 begin
@@ -70,6 +71,7 @@ begin
   FCaption := ACaption;
   FSequence := ASequence;
   FSortField := ASortField;
+  FIsReferen := AIsReferen;
   SetLength(FFields, Length(AFields));
   for i := 0 to High(AFields) do
     FFields[i] := AFields[i];
@@ -97,9 +99,9 @@ begin
   Result := Format('SELECT %s FROM %s %s %s', [rows, ATable.FName, innerjoins, consraints]);
 end;
 
-procedure TMeta.AddTable(AName, ACaption, ASequence, ASortField: String; AFields: array of TFieldInfo);
+procedure TMeta.AddTable(AName, ACaption, ASequence, ASortField: String; AIsReferen: Boolean; AFields: array of TFieldInfo);
 begin
-  AddTable(TTableInfo.Create(AName, ACaption, ASequence, ASortField, AFields));
+  AddTable(TTableInfo.Create(AName, ACaption, ASequence, ASortField, AIsReferen, AFields));
 end;
 
 procedure TMeta.AddTable(ATable: TTableInfo);
