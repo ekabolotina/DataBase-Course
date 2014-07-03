@@ -31,14 +31,13 @@ type
     end;
     TFilterInfoArray = array of TFilterInfo;
     public
-      FilterType: TComboBox;
       SubmitBtn, AddBtn: TButton;
       FilterPanels: array of TFilterPanel;
       FParent: TWinControl;
       FFilterStrList: array of String;
       FShowTableProc: TShowTableProc;
       FTable: TTableInfo;
-      FMaxCount: Integer;
+      FMaxCount, FType: Integer;
       procedure FilterEnDis(Sender: TObject);
       procedure RemoveFilter(Sender: TObject);
       procedure AddBthClick(Sender: TObject);
@@ -48,7 +47,8 @@ type
       function MakeQuery(): String;
       procedure CollectDefFilters(var AFilterArr: TFilterInfoArray);
       constructor Create(ATable: TTableInfo; AParent: TWinControl;
-        AShowTableProc: TShowTableProc; AMaxCount: Integer; AFilters: TFilterInfoArray = nil);
+        AShowTableProc: TShowTableProc; AMaxCount: Integer;
+        AType: Integer; AFilters: TFilterInfoArray = nil);
   end;
 
 implementation
@@ -92,7 +92,7 @@ begin
     end
   else
     with DefaultVals do begin
-      FFieldId := 0;
+      FFieldId := 1;
       FSignId := 0;
       FConstraint := '';
       FEnabled := True;
@@ -130,7 +130,6 @@ begin
         Left := 50;
         Style := csDropDownList;
         Items.AddStrings(FFilterStrList);
-        Items.Delete(0);
         ItemIndex := DefaultVals.FFieldId;
         OnChange := @SubmitBtnSwitch;
         Parent := FPanel;
@@ -173,19 +172,6 @@ begin
         end;
         if Length(FilterPanels) <> 2 then
           FilterPanels[High(FilterPanels)-1].FRemove.Visible := False;
-      end else begin
-        Self.FilterType := TComboBox.Create(nil);
-        with Self.FilterType do begin
-          Width := 50;
-          Height := 23;
-          Top := 8;
-          Left := 450;
-          Style := csDropDownList;
-          Items.AddStrings(['AND', 'OR']);
-          ItemIndex := 0;
-          OnChange := @SubmitBtnSwitch;
-          Parent := FPanel;
-        end;
       end;
       if not DefaultVals.FEnabled then
         FCheckBox.Checked := False;
@@ -193,7 +179,8 @@ begin
 end;
 
 constructor TFilters.Create(ATable: TTableInfo; AParent: TWinControl;
-  AShowTableProc: TShowTableProc; AMaxCount: Integer; AFilters: TFilterInfoArray);
+        AShowTableProc: TShowTableProc; AMaxCount: Integer;
+        AType: Integer; AFilters: TFilterInfoArray = nil);
 var
   i: Integer;
 begin
@@ -201,6 +188,7 @@ begin
   FTable := ATable;
   FMaxCount := AMaxCount;
   FShowTableProc := AShowTableProc;
+  FType := AType;
   AddBtn := TButton.Create(nil);
   with AddBtn do begin
     Width := 23;
@@ -273,7 +261,9 @@ end;
 function TFilters.MakeQuery(): String;
 var
   i, counter: Integer;
-  query, field, ftype: String;
+  query, field, filterType: String;
+const
+  TypeVals: array[0..1] of String = ('AND', 'OR');
 begin
   counter := 0;
   query := '';
@@ -281,16 +271,16 @@ begin
     with FilterPanels[i] do begin
       if not FCheckBox.Checked then Continue;
       field := '';
-      ftype := '';
-      with FTable.FFields[FFieldsList.ItemIndex+1] do begin
+      filterType := '';
+      with FTable.FFields[FFieldsList.ItemIndex] do begin
         if FForeignKeyTable <> '' then
           field := Format('%s.Name', [FForeignKeyTable])
         else
           field := Format('%s.%s', [FTable.FName, FName]);
       end;
       if counter <> 0 then
-        ftype := FilterType.Text;
-      query += Format(' %s %s %s :FConst_Text%d', [ftype, field, FSignsList.Text, i]);
+        filterType := TypeVals[FType];
+      query += Format(' %s %s %s :FConst_Text%d', [filterType, field, FSignsList.Text, i]);
     end;
     inc(counter);
   end;
@@ -298,6 +288,8 @@ begin
     query := 'WHERE ' + query;
   Result := query;
 end;
+
+
 
 end.
 
