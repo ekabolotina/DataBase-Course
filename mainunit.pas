@@ -61,59 +61,60 @@ end;
 
 procedure TMainForm.FormShow(Sender: TObject);
 begin
-  AT.AddTable('Subjects', 'Предметы', 'Subject_ID', 'Name', True, [
-    MkFld('ID', 'Идентификатор', 5),
-    MkFld('name', 'Название', 20)
-  ]);
-  AT.AddTable('Subject_Types', 'Виды занятий', 'Type_ID',  'Name', True, [
-    MkFld('ID', 'Идентификатор', 5),
-    MkFld('name', 'Вид', 10)
+  with AT do begin
+    AddTable('Subjects', 'Предметы', 'Subject_ID', 'Name', True, [
+      MkFld('ID', 'Идентификатор', 5),
+      MkFld('name', 'Название', 20)
     ]);
-  AT.AddTable('Professors', 'Преподаватели', 'Professor_ID',  'Name', True, [
-    MkFld('ID', 'Идентификатор', 5),
-    MkFld('name', 'ФИО', 15)
+    AddTable('Subject_Types', 'Виды занятий', 'Type_ID',  'Name', True, [
+      MkFld('ID', 'Идентификатор', 5),
+      MkFld('name', 'Вид', 10)
+      ]);
+    AddTable('Professors', 'Преподаватели', 'Professor_ID',  'Name', True, [
+      MkFld('ID', 'Идентификатор', 5),
+      MkFld('name', 'ФИО', 15)
+      ]);
+    AddTable('Times', 'Пары', 'Time_ID', 'Name', True, [
+      MkFld('ID', 'Идентификатор', 5),
+      MkFld('Name', 'Название', 5),
+      MkFld('"Begin"', 'Начало', 10),
+      MkFld('"End"', 'Окончание', 5)
     ]);
-  AT.AddTable('Times', 'Пары', 'Time_ID', 'Name', True, [
-    MkFld('ID', 'Идентификатор', 5),
-    MkFld('Name', 'Название', 5),
-    MkFld('"Begin"', 'Начало', 10),
-    MkFld('"End"', 'Окончание', 5)
-  ]);
-  AT.AddTable('Days', 'Дни', 'Day_Index',  'ID', True, [
-    MkFld('ID', 'Идентификатор', 5),
-    MkFld('name', 'День', 15)
+    AddTable('Days', 'Дни', 'Day_Index',  'ID', True, [
+      MkFld('ID', 'Идентификатор', 5),
+      MkFld('name', 'День', 15)
+      ]);
+    AddTable('Groups', 'Группы', 'Group_ID',  'Name', True, [
+      MkFld('ID', 'Идентификатор', 5),
+      MkFld('name', 'Номер', 7),
+      MkFld('Group_Size', 'Размер', 5)
     ]);
-  AT.AddTable('Groups', 'Группы', 'Group_ID',  'Name', True, [
-    MkFld('ID', 'Идентификатор', 5),
-    MkFld('name', 'Номер', 7),
-    MkFld('Group_Size', 'Размер', 5)
-  ]);
-  AT.AddTable('Rooms', 'Аудитории', 'Room_ID',  'Name', True, [
-    MkFld('ID', 'Идентификатор', 5),
-    MkFld('name', 'Номер', 15),
-    MkFld('"Size"', 'Вместимость', 10)
-  ]);
-  AT.AddTable('Professors_Subjects', 'Преподаватели - предметы', 'PS_ID',  'ID', False, [
-    MkFld('ID', 'Идентификатор', 5),
-    MkFld('Professor_ID', 'Преподаватель', 10,'Professors', 'ID'),
-    MkFld('Subject_ID', 'Предмет', 10,'Subjects', 'ID')
-  ]);
-  AT.AddTable('Subjects_Groups', 'Предметы - группы', 'SG_ID',  'ID', False, [
-    MkFld('ID', 'Идентификатор', 5),
-    MkFld('Subject_ID', 'Предмет', 15, 'Subjects', 'ID'),
-    MkFld('Group_ID', 'Группа', 15, 'Groups', 'ID')
-  ]);
-  AT.AddTable('Schedule_Items', 'Расписание', 'Item_ID',  'ID', False, [
-    MkFld('ID', 'Идентификатор', 5),
-    MkFld('Subject_ID', 'Предмет', 20, 'Subjects', 'ID'),
-    MkFld('Subject_Type_ID', 'Вид занятия', 3, 'Subject_Types', 'ID'),
-    MkFld('Professor_ID', 'Преподаватель', 10, 'Professors', 'ID'),
-    MkFld('Time_Index', 'Пара', 3, 'Times', 'ID'),
-    MkFld('Day_Index', 'День недели', 7, 'Days', 'ID'),
-    MkFld('Group_ID', 'Группа', 6, 'Groups', 'ID'),
-    MkFld('Room_ID', 'Аудитория', 5,'Rooms', 'ID')
-  ]);
-
+    AddTable('Rooms', 'Аудитории', 'Room_ID',  'Name', True, [
+      MkFld('ID', 'Идентификатор', 5),
+      MkFld('name', 'Номер', 15),
+      MkFld('"Size"', 'Вместимость', 10)
+    ]);
+    AddTable('Professors_Subjects', 'Преподаватели - предметы', 'PS_ID',  'ID', False, [
+      MkFld('ID', 'Идентификатор', 5),
+      MkFld('Professor_ID', 'Преподаватель', 10,'Professors', 'ID'),
+      MkFld('Subject_ID', 'Предмет', 10,'Subjects', 'ID')
+    ]);
+    AddTable('Subjects_Groups', 'Предметы - группы', 'SG_ID',  'ID', False, [
+      MkFld('ID', 'Идентификатор', 5),
+      MkFld('Subject_ID', 'Предмет', 15, 'Subjects', 'ID'),
+      MkFld('Group_ID', 'Группа', 15, 'Groups', 'ID')
+    ]);
+    AddTable('Schedule_Items', 'Расписание', 'Item_ID',  'ID', False, [
+      MkFld('ID', 'Идентификатор', 5),
+      MkFld('Subject_ID', 'Предмет', 20, 'Subjects', 'ID'),
+      MkFld('Subject_Type_ID', 'Вид занятия', 3, 'Subject_Types', 'ID'),
+      MkFld('Professor_ID', 'Преподаватель', 10, 'Professors', 'ID'),
+      MkFld('Time_Index', 'Пара', 3, 'Times', 'ID'),
+      MkFld('Day_Index', 'День недели', 7, 'Days', 'ID'),
+      MkFld('Group_ID', 'Группа', 6, 'Groups', 'ID'),
+      MkFld('Room_ID', 'Аудитория', 5,'Rooms', 'ID')
+    ]);
+  end;
   with ConflictsModule do begin
     AddConflict('Разные пары в одной аудитории', [4, 5, 7], [3]);
     AddConflict('Преподаватель в разных аудиториях', [3, 4, 5], [7]);
