@@ -36,7 +36,7 @@ type
     CurrentID: Integer;
     CurrentisEditorEnabled: Boolean;
     EditPanels: array of TEditPanel;
-    CurrentIDs: array of Integer;
+    CurrentIDs, DefIDs: array of Integer;
     RefreshTableProc: TRefreshTableProc;
     procedure BuildEditor;
     procedure CollectIDs;
@@ -45,7 +45,7 @@ type
     function GetFieldVal(AField: String): String;
     procedure ClearTrash(AID: Integer);
     class procedure ShowEditor(ATable: TTableInfo; AID: Integer; isEditorEnabled: Boolean;
-      ARefreshTableProc: TRefreshTableProc);
+      ARefreshTableProc: TRefreshTableProc; ADefIDs: array of Integer);
   end;
 
   TEditFrms = record
@@ -59,7 +59,7 @@ var
 implementation
 
 class procedure TCardEditForm.ShowEditor(ATable: TTableInfo; AID: Integer;
-  isEditorEnabled: Boolean; ARefreshTableProc: TRefreshTableProc);
+  isEditorEnabled: Boolean; ARefreshTableProc: TRefreshTableProc; ADefIDs: array of Integer);
 var
   i: Integer;
 begin
@@ -84,6 +84,9 @@ begin
     CurrentID := AID;
     CurrentisEditorEnabled := isEditorEnabled;
     RefreshTableProc := ARefreshTableProc;
+    SetLength(DefIDs, Length(ADefIDs));
+    for i := 0 to High(ADefIDs) do
+      DefIDs[i] := ADefIDs[i];
     BuildEditor;
   end;
 end;
@@ -198,7 +201,10 @@ begin
         Height := 23;
         Top := preTop;
         Left := 140;
-        if CurrentisEditorEnabled then KeyValue := CurrentIDs[i];
+        if CurrentisEditorEnabled then
+          KeyValue := CurrentIDs[i]
+        else if DefIDs[i] <> -1 then
+          KeyValue := DefIDs[i];
         Style := csDropDownList;
         Parent := CardEditGroupBox;
         OnChange := @BtnSaveEnDis;
@@ -260,7 +266,6 @@ begin
     if empty then
       MessageDlg('Заполните все поля', mtCustom, [mbOK], 0)
     else begin
-      ShowMessage(SQL.Text);
       ExecSQL;
       ConnectModule.SQLTransaction.Commit;
       BtnSave.Enabled := False;
