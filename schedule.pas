@@ -20,6 +20,7 @@ type
     BtnExportHTML: TButton;
     BtnExportExcel: TButton;
     ImageList: TImageList;
+    PopUpMenuCellShowConflict: TMenuItem;
     PopUpMenuCellEdit: TMenuItem;
     PopUpMenuCellDelete: TMenuItem;
     PopupMenuCell: TPopupMenu;
@@ -44,6 +45,7 @@ type
   procedure ConflictsTreeBtnClick(Sender: TObject);
   procedure PopUpMenuCellDeleteClick(Sender: TObject);
   procedure PopUpMenuCellEditClick(Sender: TObject);
+  procedure PopUpMenuCellShowConflictClick(Sender: TObject);
   published
     BtnSwitch: TSpeedButton;
     CheckGroup: TCheckGroup;
@@ -84,6 +86,7 @@ type
     DefaultFilters: array of TFilterInfo;
     ScheduleItems: array of array of array of array of String;
     IdtoRemoveOrEdit: String;
+    ConflictInfo: TPoint;
     procedure PopUpForm;
     function FillHeader(ATable: TTableInfo; var Headers: DinArr): Integer;
     procedure FillItems(AFieldH, AFieldV: Integer);
@@ -154,7 +157,7 @@ begin
   ComboBoxH.ItemIndex := 0;
   ComboBoxV.ItemIndex := 1;
   ScheduleTable := TMeta.GetTableByName('Schedule_Items');
-  F := TFilters.Create(ScheduleTable, ScrollBox, @LoadGrid, 100);
+  F := TFilters.Create(ScheduleTable, ScrollBox, @LoadGrid, 0, 100);
   BuildCheckBoxGroup;
   LoadGrid;
 end;
@@ -220,7 +223,7 @@ begin
     DrawGrid.Canvas.Pen.Color := clRed;
     DrawGrid.Canvas.Pen.Style := psDash;
     DrawGrid.Canvas.Pen.Width := 2;
-    if ConflictsModule.IsInConflict(StrToInt(ScheduleItems[aCol][aRow][i][0])) then
+    if ConflictsModule.IsInConflict(StrToInt(ScheduleItems[aCol][aRow][i][0])).x > -1 then
       DrawGrid.Canvas.Line(aRect.Left + 2, marginY + (currItemMargin + 5) * i + 10, aRect.Left + 2, marginY + outsideMargin - 5);
     outsideMargin += 8;
     DrawGrid.Canvas.Pen.Style := psSolid;
@@ -399,8 +402,20 @@ begin
 end;
 
 procedure TFormSchedule.ShowPopUpMenu(AID, X, Y: Integer);
+var
+  currId: String;
+  c: TPoint;
 begin
-  IdtoRemoveOrEdit := ScheduleItems[CurrentMouse.X][CurrentMouse.Y][AID][0];
+  currId := ScheduleItems[CurrentMouse.X][CurrentMouse.Y][AID][0];
+  IdtoRemoveOrEdit := currId;
+  c := ConflictsModule.IsInConflict(StrToInt(currId));
+  if c.x = -1 then
+     PopupMenuCell.Items[2].Visible := False
+  else begin
+     PopupMenuCell.Items[2].Visible := True;
+     with ConflictsModule.ConflictPairs[c.x][c.y] do
+       ConflictInfo := Point(x, y);
+  end;
   PopupMenuCell.PopUp(X, Y);
 end;
 
@@ -424,8 +439,8 @@ begin
 
     F.CollectDefFilters(DefaultFilters);
     SetLength(DefaultFilters, Length(DefaultFilters)+2);
-    DefaultFilters[High(DefaultFilters)-1] := TFilterInfo.Create(FieldH - 1, 2, HVals[Col].Name, True);
-    DefaultFilters[High(DefaultFilters)] := TFilterInfo.Create(FieldV - 1, 2, VVals[Row].Name, True);
+    DefaultFilters[High(DefaultFilters)-1] := TFilterInfo.Create(FieldH, 2, HVals[Col].Name, True);
+    DefaultFilters[High(DefaultFilters)] := TFilterInfo.Create(FieldV, 2, VVals[Row].Name, True);
 
 end;
 
@@ -434,6 +449,14 @@ var
   tmpArr: array of Integer;
 begin
   TCardEditForm.ShowEditor(ScheduleTable, StrToInt(IdtoRemoveOrEdit), True, @LoadGrid, tmpArr);
+end;
+
+procedure TFormSchedule.PopUpMenuCellShowConflictClick(Sender: TObject);
+begin
+  SetLength(DefaultFilters, 2);
+  DefaultFilters[0] := TFilterInfo.Create(0, 2, IntToStr(ConflictInfo.x), True);
+  DefaultFilters[1] := TFilterInfo.Create(0, 2, IntToStr(ConflictInfo.y), True);
+  ReferenForm.PopupForm(ScheduleTable, 1, DefaultFilters);
 end;
 
 procedure TFormSchedule.PopUpMenuCellDeleteClick(Sender: TObject);
@@ -558,7 +581,7 @@ end;
 procedure TFormSchedule.DrawGridDblClick(Sender: TObject);
 begin
   if (CurrentMouse.X <> 0) and (CurrentMouse.Y <> 0) then
-    ReferenForm.PopupForm(ScheduleTable, DefaultFilters);
+    ReferenForm.PopupForm(ScheduleTable, 0, DefaultFilters);
 end;
 
 procedure TFormSchedule.UpdateGridOnClick(Sender: TObject);
@@ -632,14 +655,14 @@ begin
         Continue;
       end;
       for k := 0 to High(ScheduleItems[i, j]) do begin
-        if ConflictsModule.IsInConflict(StrToInt(ScheduleItems[i][j][k][0])) then
+        if ConflictsModule.IsInConflict(StrToInt(ScheduleItems[i][j][k][0])).x > -1 then
           Write(fo, '<div class = "conflict">');
         for l := 1 to High(ScheduleItems[i, j, k]) do begin
           Write(fo, '<strong>' + ScheduleTable.FFields[l].FCaption + ':</strong> ' + ScheduleItems[i][j][k][l] + '<br />');
         end;
         if k <> High(ScheduleItems[i, j]) then
           WriteLn(fo, '<div class = "separator">&nbsp</div>');
-        if ConflictsModule.IsInConflict(StrToInt(ScheduleItems[i][j][k][0])) then
+        if ConflictsModule.IsInConflict(StrToInt(ScheduleItems[i][j][k][0])).x > -1 then
           Write(fo, '</div>');
       end;
       WriteLn(fo, '</td>');
