@@ -15,8 +15,8 @@ begin
   Application.Title:='SQLAdmin';
   RequireDerivedFormResource := True;
   Application.Initialize;
-  Application.CreateForm(TMainForm, MainForm);
   Application.CreateForm(TConnectModule, ConnectModule);
+  Application.CreateForm(TMainForm, MainForm);
   Application.CreateForm(TReferenForm, ReferenForm);
   //Application.CreateForm(TFormSchedule, FormSchedule);
   Application.Run;
